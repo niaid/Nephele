@@ -1,0 +1,10 @@
+AMI_ID,ami-c84f66a2
+STUDY_TITLE,test33
+PLATFORM,454
+PIPELINE_TYPE,16s
+BB_WORK_DIR,bb_work_dir44
+SAMPLE_TYPE,mouse
+MAP_FILE,map.txt
+READS_ZIP,16s_reads.zip
+LOG_FILE,logfile.txt
+INPUT_TYPE,BioBakery_16s

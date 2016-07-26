@@ -1,0 +1,1 @@
+../MOTHUR_MiSeq/run.sh

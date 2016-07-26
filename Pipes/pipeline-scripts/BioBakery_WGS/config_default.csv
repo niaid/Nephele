@@ -1,0 +1,5 @@
+AMI_ID,ami-e2b7fb88
+READS_ZIP,wgs_reads.zip
+MAP_FILE,map.txt
+LOG_FILE,logfile.txt
+INPUT_TYPE,BioBakery_WGS

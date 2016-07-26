@@ -1,0 +1,17 @@
+{
+"QIIME SFF":"QIIME_1a",
+"Mothur SFF":"MOTHUR_454",
+"Mothur Ion Torrent":"MOTHUR_IonTorrent",
+"Mothur FASTQ Paired End":"MOTHUR_MiSeq",
+"QIIME FASTQ Single End":"QIIME_1c",
+"QIIME FASTQ Paired End":"QIIME_1d",
+"QIIME FASTQ Paired End Multiplex":"QIIME_1e",
+"QIIME FASTA and QUALITY":"QIIME_1b",
+"QIIME ITS":"QIIME_ITS",
+"BioBakery SFF or FASTQ":"BioBakery_16s",
+"BioBakery SFF or FASTQ Single End or Paired End":"BioBakery_WGS",
+"Compare BIOM to HMP":"BETADIV",
+"A5-MiSeq FASTQ Paired End":"NGOPT",
+"Mothur 18S FASTQ Paired End":"MISEQ_18S_MOTHUR"
+}
+

@@ -1,0 +1,9 @@
+TZ='America/New_York' date >logfile.txt
+chmod a+x ./ngopt.py
+chmod a+x ./exit_script.sh
+sudo cp ./adapter.fasta /opt/a5/adapter.fasta
+./ngopt.py config.csv >>logfile.txt 2>&1
+TZ='America/New_York' date >>logfile.txt
+TZ='America/New_York' date >Pipeline_done.txt
+/bin/bash ./exit_script.sh >> logfile.txt 2>&1
+

@@ -1,0 +1,30 @@
+# output files
+*.zip
+*.jar
+*.war
+*.gz
+*.tgz
+*.tar
+*.pyc
+deployment_dir/*
+
+# emacs backups have ~'s
+*~
+
+# no fasta files or fastq files please...
+#*fasta
+*fastq
+
+# i don't think these are needed either
+*.biom
+*.align
+*.tax
+*.pat
+
+
+# these are tmp ignores until I know how to deal with them
+system/pipeline-scripts/NGOPT/*
+system/pipeline-scripts/BIOBACKERY/*
+
+# some MacOSX meta file
+.DS_Store

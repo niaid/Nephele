@@ -1,0 +1,7 @@
+AMI_ID,ami-f6847f9b
+INPUT_TYPE,'BETADIV'
+BODY_SITE,Stool
+DB_VER,35
+BIOM_FILE,stool_small.biom
+MAP_FILE,stool_small.map
+MAX_NUM,7
