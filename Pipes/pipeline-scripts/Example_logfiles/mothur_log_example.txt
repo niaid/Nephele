@@ -3,13 +3,10 @@ Tue Mar 15 17:20:31 EDT 2016
 [ 2016-07-26 07:29:12,957 - WARNING ] Not sure what to do with param UserDescription, set to github_log; ignoring.
 [ 2016-07-26 07:29:12,957 - WARNING ] Not sure what to do with param LOG_FILE, set to logfile.txt; ignoring.
 [ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param RUN_SCRIPT, set to run; ignoring.
-[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param Email, set to ian.misner@nih.gov; ignoring.
 [ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param AMI_LOGIN, set to ubuntu; ignoring.
 [ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param AMI_ID, set to ami-6810de05; ignoring.
 [ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param TEST_FILES, set to https://s3.amazonaws.com/nephele-docs/Test-Files/QIIME-MiSeq/MiSeq.zip;https://s3.amazonaws.com/nephele-docs/Test-Files/QIIME-MiSeq/map.txt; ignoring.
 [ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param ShareData, set to No; ignoring.
-[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param UseCode, set to UCGOBCBB; ignoring.
-[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param PEM_FILE, set to /home/macmenaminpe/.ec2/philip_macm.pem; ignoring.
 [ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param pipelineName, set to Mothur FASTQ Paired End; ignoring.
 [ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param InstanceType, set to c3.4xlarge; ignoring.
 [ 2016-07-26 07:29:13,671 - INFO ] File MiSeq_paired-end_cell2015_subset.csv exists as expected.
