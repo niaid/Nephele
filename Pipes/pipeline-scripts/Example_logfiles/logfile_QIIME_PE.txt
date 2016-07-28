@@ -1,0 +1,168 @@
+Tue Mar 15 17:20:31 EDT 2016
+[ 2016-07-26 07:29:15,069 - INFO ] checking EOL on MiSeq_paired-end_cell2015_subset.txt
+[ 2016-07-26 07:29:15,069 - INFO ] checking EOL on logfile.txt
+[ 2016-07-26 07:29:15,069 - WARNING ] OTUS_PARAMS_FILE is being left unassigned
+[ 2016-07-26 07:29:15,071 - INFO ] Software Versions: QIIME 1.9.1: Quantitative Insights Into Microbial Ecology.
+[ 2016-07-26 07:29:15,071 - INFO ] Software Versions: UCHIME 4.2
+[ 2016-07-26 07:29:15,071 - INFO ] Software Versions: Mothur v.1.36.1
+[ 2016-07-26 07:29:15,071 - INFO ] 
+q_param : 19
+n_param : 0
+hmp_database : SILVA_99
+differential_otu_enrichment : True
+sample_depth : False
+nearest_n_samples : 7
+analysis_type : OPEN_REFERENCE
+interactive_otu_heatmap : True
+map_file : MiSeq_paired-end_cell2015_subset.txt
+ref_fasta_file : /home/ubuntu/ref_dbs/silva/SILVA123_QIIME_release/rep_set/rep_set_16S_only/99/99_otus_16S.fasta
+log : <logging.Logger object at 0x7fb837836e10>
+min_overlap : 10
+max_bad_run_length : 3
+comp_with_dacc : False
+otus_params_file : otus_params.txt
+core_diversity_analyses : True
+pipelinename : QIIME FASTQ Paired End
+fraction : 0.1
+tree_file : /home/ubuntu/ref_dbs/silva/SILVA123_QIIME_release/trees/99/99_otus.tre
+perc_max_diff : 25
+pipe_name : MISEQ_PAIR-END
+bootstrapped_tree : True
+samples : [Sample(sample_id='ID.3', BarcodeSequence='', LinkerPrimerSequence='', fwd_fq_file='3_S3_L001_R1_001s.fastq', rev_fq_file='3_S3_L001_R2_001s.fastq', TreatmentGroup='week0', Description='Hand_Denisse'), Sample(sample_id='ID.4', BarcodeSequence='', LinkerPrimerSequence='', fwd_fq_file='4_S4_L001_R1_001s.fastq', rev_fq_file='4_S4_L001_R2_001s.fastq', TreatmentGroup='week0', Description='Hand_Denisse'), Sample(sample_id='ID.5', BarcodeSequence='', LinkerPrimerSequence='', fwd_fq_file='5_S5_L001_R1_001s.fastq', rev_fq_file='5_S5_L001_R2_001s.fastq', TreatmentGroup='week0', Description='Hand_Denisse'), Sample(sample_id='ID.6', BarcodeSequence='', LinkerPrimerSequence='', fwd_fq_file='6_S6_L001_R1_001s.fastq', rev_fq_file='6_S6_L001_R2_001s.fastq', TreatmentGroup='week0', Description='Hand_Denisse'), Sample(sample_id='ID.23', BarcodeSequence='', LinkerPrimerSequence='', fwd_fq_file='23_S23_L001_R1_001s.fastq', rev_fq_file='23_S23_L001_R2_001s.fastq', TreatmentGroup='week2', Description='Hand_Denisse'), Sample(sample_id='ID.24', BarcodeSequence='', LinkerPrimerSequence='', fwd_fq_file='24_S24_L001_R1_001s.fastq', rev_fq_file='24_S24_L001_R2_001s.fastq', TreatmentGroup='week2', Description='Hand_Denisse'), Sample(sample_id='ID.25', BarcodeSequence='', LinkerPrimerSequence='', fwd_fq_file='25_S25_L001_R1_001s.fastq', rev_fq_file='25_S25_L001_R2_001s.fastq', TreatmentGroup='week2', Description='Hand_Denisse'), Sample(sample_id='ID.26', BarcodeSequence='', LinkerPrimerSequence='', fwd_fq_file='26_S26_L001_R1_001s.fastq', rev_fq_file='26_S26_L001_R2_001s.fastq', TreatmentGroup='week2', Description='Hand_Denisse')]
+cmds : []
+debug : False
+has_overide_core_div : False
+region_dacc : v1v3
+functional_enrichment : True
+core_microbiome : False
+usecode : UCGOBCBB
+test_files : https://s3.amazonaws.com/nephele-pipelines-development/Test-Files/public-test-data/MiSeq_paired-end_cell2015_subset_ed.csv;https://s3.amazonaws.com/nephele-pipelines-development/Test-Files/public-test-data/6subset_Cell2015s.zip
+body_site : Saliva
+ami_id : ami-6810de05
+has_barcode : True
+warnings_log : <logging.Logger object at 0x7fb837792ed0>
+reverse_complement : True
+email : ian.misner@nih.gov
+do_run_core_div : True
+ref_taxonomy_file : /home/ubuntu/ref_dbs/silva/SILVA123_QIIME_release/taxonomy/16S_only/99/taxonomy_7_levels.txt
+is_demultiplex : False
+chimera : True
+log_file : logfile.txt
+instancetype : c3.4xlarge
+
+[ 2016-07-26 07:29:15,071 - INFO ] Pipeline started
+[ 2016-07-26 07:29:15,071 - INFO ] Trying : join_paired_ends.py  --output_dir=ID.3 --forward_reads_fp=3_S3_L001_R1_001s.fastq --reverse_reads_fp=3_S3_L001_R2_001s.fastq --perc_max_diff=25 --min_overlap=10
+[ 2016-07-26 07:30:08,727 - INFO ] Trying : join_paired_ends.py  --output_dir=ID.4 --forward_reads_fp=4_S4_L001_R1_001s.fastq --reverse_reads_fp=4_S4_L001_R2_001s.fastq --perc_max_diff=25 --min_overlap=10
+[ 2016-07-26 07:30:09,916 - INFO ] Trying : join_paired_ends.py  --output_dir=ID.5 --forward_reads_fp=5_S5_L001_R1_001s.fastq --reverse_reads_fp=5_S5_L001_R2_001s.fastq --perc_max_diff=25 --min_overlap=10
+[ 2016-07-26 07:30:11,101 - INFO ] Trying : join_paired_ends.py  --output_dir=ID.6 --forward_reads_fp=6_S6_L001_R1_001s.fastq --reverse_reads_fp=6_S6_L001_R2_001s.fastq --perc_max_diff=25 --min_overlap=10
+[ 2016-07-26 07:30:12,285 - INFO ] Trying : join_paired_ends.py  --output_dir=ID.23 --forward_reads_fp=23_S23_L001_R1_001s.fastq --reverse_reads_fp=23_S23_L001_R2_001s.fastq --perc_max_diff=25 --min_overlap=10
+[ 2016-07-26 07:30:13,469 - INFO ] Trying : join_paired_ends.py  --output_dir=ID.24 --forward_reads_fp=24_S24_L001_R1_001s.fastq --reverse_reads_fp=24_S24_L001_R2_001s.fastq --perc_max_diff=25 --min_overlap=10
+[ 2016-07-26 07:30:14,657 - INFO ] Trying : join_paired_ends.py  --output_dir=ID.25 --forward_reads_fp=25_S25_L001_R1_001s.fastq --reverse_reads_fp=25_S25_L001_R2_001s.fastq --perc_max_diff=25 --min_overlap=10
+[ 2016-07-26 07:30:15,838 - INFO ] Trying : join_paired_ends.py  --output_dir=ID.26 --forward_reads_fp=26_S26_L001_R1_001s.fastq --reverse_reads_fp=26_S26_L001_R2_001s.fastq --perc_max_diff=25 --min_overlap=10
+[ 2016-07-26 07:30:17,035 - INFO ] Output file ID.3/fastqjoin.join.fastq exists as expected. Can proceed to next step
+[ 2016-07-26 07:30:17,035 - INFO ] Output file ID.4/fastqjoin.join.fastq exists as expected. Can proceed to next step
+[ 2016-07-26 07:30:17,035 - INFO ] Output file ID.5/fastqjoin.join.fastq exists as expected. Can proceed to next step
+[ 2016-07-26 07:30:17,035 - INFO ] Output file ID.6/fastqjoin.join.fastq exists as expected. Can proceed to next step
+[ 2016-07-26 07:30:17,035 - INFO ] Output file ID.23/fastqjoin.join.fastq exists as expected. Can proceed to next step
+[ 2016-07-26 07:30:17,035 - INFO ] Output file ID.24/fastqjoin.join.fastq exists as expected. Can proceed to next step
+[ 2016-07-26 07:30:17,036 - INFO ] Output file ID.25/fastqjoin.join.fastq exists as expected. Can proceed to next step
+[ 2016-07-26 07:30:17,036 - INFO ] Output file ID.26/fastqjoin.join.fastq exists as expected. Can proceed to next step
+[ 2016-07-26 07:30:17,036 - INFO ] Trying : validate_mapping_file.py  --mapping_fp=ID.3/map.txt --output_dir=ID.3
+[ 2016-07-26 07:30:17,883 - WARNING ] Errors and/or warnings detected in mapping file.  Please check the log and html file for details.
+
+[ 2016-07-26 07:30:17,883 - INFO ] Trying : validate_mapping_file.py  --mapping_fp=ID.4/map.txt --output_dir=ID.4
+[ 2016-07-26 07:30:18,590 - WARNING ] Errors and/or warnings detected in mapping file.  Please check the log and html file for details.
+
+[ 2016-07-26 07:30:18,590 - INFO ] Trying : validate_mapping_file.py  --mapping_fp=ID.5/map.txt --output_dir=ID.5
+[ 2016-07-26 07:30:19,467 - WARNING ] Errors and/or warnings detected in mapping file.  Please check the log and html file for details.
+
+[ 2016-07-26 07:30:19,467 - INFO ] Trying : validate_mapping_file.py  --mapping_fp=ID.6/map.txt --output_dir=ID.6
+[ 2016-07-26 07:30:20,172 - WARNING ] Errors and/or warnings detected in mapping file.  Please check the log and html file for details.
+
+[ 2016-07-26 07:30:20,172 - INFO ] Trying : validate_mapping_file.py  --mapping_fp=ID.23/map.txt --output_dir=ID.23
+[ 2016-07-26 07:30:20,882 - WARNING ] Errors and/or warnings detected in mapping file.  Please check the log and html file for details.
+
+[ 2016-07-26 07:30:20,882 - INFO ] Trying : validate_mapping_file.py  --mapping_fp=ID.24/map.txt --output_dir=ID.24
+[ 2016-07-26 07:30:21,591 - WARNING ] Errors and/or warnings detected in mapping file.  Please check the log and html file for details.
+
+[ 2016-07-26 07:30:21,591 - INFO ] Trying : validate_mapping_file.py  --mapping_fp=ID.25/map.txt --output_dir=ID.25
+[ 2016-07-26 07:30:22,298 - WARNING ] Errors and/or warnings detected in mapping file.  Please check the log and html file for details.
+
+[ 2016-07-26 07:30:22,298 - INFO ] Trying : validate_mapping_file.py  --mapping_fp=ID.26/map.txt --output_dir=ID.26
+[ 2016-07-26 07:30:23,005 - WARNING ] Errors and/or warnings detected in mapping file.  Please check the log and html file for details.
+
+[ 2016-07-26 07:30:23,159 - INFO ] Trying : split_libraries_fastq.py  --output_dir=split_lib_out --sequence_read_fps=ID.3/fastqjoin.join.fastq,ID.4/fastqjoin.join.fastq,ID.5/fastqjoin.join.fastq,ID.6/fastqjoin.join.fastq,ID.23/fastqjoin.join.fastq,ID.24/fastqjoin.join.fastq,ID.25/fastqjoin.join.fastq,ID.26/fastqjoin.join.fastq --phred_quality_threshold=19 --sequence_max_n=0 --mapping_fps=ID.3/map.txt,ID.4/map.txt,ID.5/map.txt,ID.6/map.txt,ID.23/map.txt,ID.24/map.txt,ID.25/map.txt,ID.26/map.txt --phred_offset=33 --barcode_type=not-barcoded  --sample_ids=ID.3,ID.4,ID.5,ID.6,ID.23,ID.24,ID.25,ID.26 --max_bad_run_length=3
+[ 2016-07-26 07:30:34,626 - INFO ] Output file split_lib_out/seqs.fna exists as expected. Can proceed to next step
+[ 2016-07-26 07:30:34,819 - INFO ] Trying : pick_open_reference_otus.py  -i split_lib_out/seqs.fna -o otus -r /home/ubuntu/ref_dbs/silva/SILVA123_QIIME_release/rep_set/rep_set_16S_only/99/99_otus_16S.fasta --otu_picking_method uclust  --parameter_fp=otus_params.txt --force
+[ 2016-07-26 07:38:49,351 - INFO ] Trying : mothur "#chimera.uchime(fasta=otus/rep_set.fna,reference=/usr/local/lib/python2.7/dist-packages/qiime_test_data/align_seqs/core_set_aligned.fasta.imputed,processors=16)"
+[ 2016-07-26 07:39:25,821 - INFO ] Trying : filter_fasta.py  --input_fasta_fp=otus/rep_set.fna --output_fasta_fp=otus/rep_set_non_chimeric.fasta  --seq_id_fp=otus/rep_set.ref.uchime.accnos --negate
+[ 2016-07-26 07:39:26,549 - INFO ] Trying : parallel_align_seqs_pynast.py  --input_fasta_fp=otus/rep_set_non_chimeric.fasta  --output_dir=otus/pynast_aligned_seqs --jobs_to_start=16 --poll_directly
+[ 2016-07-26 07:39:47,813 - INFO ] 201 chimeras found.
+[ 2016-07-26 07:39:47,814 - INFO ] Trying : biom summarize-table  -i otus/otu_table_mc2_w_tax_no_pynast_failures.biom -o otus/otu_table_mc2_w_tax_no_pynast_failures.biom.summary.txt 
+[ 2016-07-26 07:39:48,024 - INFO ] Output file otus/otu_table_mc2_w_tax_no_pynast_failures.biom exists as expected. Can proceed to next step
+[ 2016-07-26 07:39:48,025 - INFO ] Output file otus/otu_table_mc2_w_tax_no_pynast_failures.biom.summary.txt exists as expected. Can proceed to next step
+[ 2016-07-26 07:39:48,049 - INFO ] Trying : filter_samples_from_otu_table.py  --input_fp=otus/otu_table_mc2_w_tax_no_pynast_failures.biom --output_fp=otus/otu_table_mc2_w_tax_no_pynast_failures.biom.new --min_count=970
+[ 2016-07-26 07:39:49,025 - INFO ] Trying : mv otus/otu_table_mc2_w_tax_no_pynast_failures.biom otus/otu_table_mc2_w_tax_no_pynast_failures.biom.orig
+[ 2016-07-26 07:39:49,027 - INFO ] Trying : mv otus/otu_table_mc2_w_tax_no_pynast_failures.biom.new otus/otu_table_mc2_w_tax_no_pynast_failures.biom
+[ 2016-07-26 07:39:49,029 - INFO ] Trying : sort_otu_table.py  --input_otu_table=otus/otu_table_mc2_w_tax_no_pynast_failures.biom --output_fp=otussorted_otu_table.biom
+[ 2016-07-26 07:39:49,979 - INFO ] Trying : summarize_taxa.py  --otu_table_fp=otussorted_otu_table.biom --output_dir=taxa_plots
+[ 2016-07-26 07:39:52,445 - INFO ] Trying : plot_taxa_summary.py  --counts_fname=taxa_plots/otussorted_otu_table_L4.txt,taxa_plots/otussorted_otu_table_L6.txt,taxa_plots/otussorted_otu_table_L2.txt,taxa_plots/otussorted_otu_table_L5.txt,taxa_plots/otussorted_otu_table_L3.txt --dir_path=taxa_plots/taxa_summary_plots/
+[ 2016-07-26 07:40:00,540 - WARNING ] /usr/local/lib/python2.7/dist-packages/matplotlib/collections.py:590: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+  if self._edgecolors == str('face'):
+
+[ 2016-07-26 07:40:00,552 - INFO ] Trying : make_otu_heatmap.py  --imagetype=svg --otu_table_fp=taxa_plots/otussorted_otu_table_L4.biom --output_fp=heat_map/heatmap.svg
+[ 2016-07-26 07:40:02,149 - WARNING ] /usr/local/lib/python2.7/dist-packages/matplotlib/collections.py:590: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+  if self._edgecolors == str('face'):
+
+[ 2016-07-26 07:40:02,152 - INFO ] Trying : core_diversity_analyses.py  --output_dir=core_diversity --input_biom_fp=otus/otu_table_mc2_w_tax_no_pynast_failures.biom --mapping_fp=MiSeq_paired-end_cell2015_subset.txt --parallel  --jobs_to_start=4 --sampling_depth=970 --categories=TreatmentGroup --tree_fp=otus/rep_set.tre --parameter_fp=otus_params.txt
+[ 2016-07-26 07:42:40,488 - WARNING ] /usr/local/lib/python2.7/dist-packages/skbio/stats/ordination/_principal_coordinate_analysis.py:107: RuntimeWarning: The result contains negative eigenvalues. Please compare their magnitude with the magnitude of some of the largest positive eigenvalues. If the negative ones are smaller, it's probably safe to ignore them, but if they are large in magnitude, the results won't be useful. See the Notes section for more details. The smallest eigenvalue is -0.0018065974382 and the largest is 0.0729155011752.
+  RuntimeWarning
+/usr/local/lib/python2.7/dist-packages/matplotlib/collections.py:590: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+  if self._edgecolors == str('face'):
+/usr/local/lib/python2.7/dist-packages/matplotlib/collections.py:590: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+  if self._edgecolors == str('face'):
+/usr/local/lib/python2.7/dist-packages/matplotlib/collections.py:590: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+  if self._edgecolors == str('face'):
+
+[ 2016-07-26 07:42:40,501 - INFO ] Trying : jackknifed_beta_diversity.py  --otu_table_fp=otus/otu_table_mc2_w_tax_no_pynast_failures.biom --output_dir=jackknifed --seqs_per_sample=970 --mapping_fp=MiSeq_paired-end_cell2015_subset.txt --tree_fp=otus/rep_set.tre --force 
+[ 2016-07-26 07:42:56,599 - WARNING ] /usr/local/lib/python2.7/dist-packages/skbio/stats/ordination/_principal_coordinate_analysis.py:107: RuntimeWarning: The result contains negative eigenvalues. Please compare their magnitude with the magnitude of some of the largest positive eigenvalues. If the negative ones are smaller, it's probably safe to ignore them, but if they are large in magnitude, the results won't be useful. See the Notes section for more details. The smallest eigenvalue is -0.00296764198755 and the largest is 0.0825723476003.
+  RuntimeWarning
+/usr/local/lib/python2.7/dist-packages/skbio/stats/ordination/_principal_coordinate_analysis.py:107: RuntimeWarning: The result contains negative eigenvalues. Please compare their magnitude with the magnitude of some of the largest positive eigenvalues. If the negative ones are smaller, it's probably safe to ignore them, but if they are large in magnitude, the results won't be useful. See the Notes section for more details. The smallest eigenvalue is -0.00204902477845 and the largest is 0.0810732139576.
+  RuntimeWarning
+/usr/local/lib/python2.7/dist-packages/skbio/stats/ordination/_principal_coordinate_analysis.py:107: RuntimeWarning: The result contains negative eigenvalues. Please compare their magnitude with the magnitude of some of the largest positive eigenvalues. If the negative ones are smaller, it's probably safe to ignore them, but if they are large in magnitude, the results won't be useful. See the Notes section for more details. The smallest eigenvalue is -0.00415944310976 and the largest is 0.0757736931461.
+  RuntimeWarning
+/usr/local/lib/python2.7/dist-packages/skbio/stats/ordination/_principal_coordinate_analysis.py:107: RuntimeWarning: The result contains negative eigenvalues. Please compare their magnitude with the magnitude of some of the largest positive eigenvalues. If the negative ones are smaller, it's probably safe to ignore them, but if they are large in magnitude, the results won't be useful. See the Notes section for more details. The smallest eigenvalue is -0.0030679492175 and the largest is 0.0776611883559.
+  RuntimeWarning
+/usr/local/lib/python2.7/dist-packages/skbio/stats/ordination/_principal_coordinate_analysis.py:107: RuntimeWarning: The result contains negative eigenvalues. Please compare their magnitude with the magnitude of some of the largest positive eigenvalues. If the negative ones are smaller, it's probably safe to ignore them, but if they are large in magnitude, the results won't be useful. See the Notes section for more details. The smallest eigenvalue is -0.0025965987078 and the largest is 0.084848803765.
+  RuntimeWarning
+/usr/local/lib/python2.7/dist-packages/skbio/stats/ordination/_principal_coordinate_analysis.py:107: RuntimeWarning: The result contains negative eigenvalues. Please compare their magnitude with the magnitude of some of the largest positive eigenvalues. If the negative ones are smaller, it's probably safe to ignore them, but if they are large in magnitude, the results won't be useful. See the Notes section for more details. The smallest eigenvalue is -0.000443834063421 and the largest is 0.0788754324616.
+  RuntimeWarning
+/usr/local/lib/python2.7/dist-packages/skbio/stats/ordination/_principal_coordinate_analysis.py:107: RuntimeWarning: The result contains negative eigenvalues. Please compare their magnitude with the magnitude of some of the largest positive eigenvalues. If the negative ones are smaller, it's probably safe to ignore them, but if they are large in magnitude, the results won't be useful. See the Notes section for more details. The smallest eigenvalue is -0.00388795423284 and the largest is 0.083828181188.
+  RuntimeWarning
+/usr/local/lib/python2.7/dist-packages/skbio/stats/ordination/_principal_coordinate_analysis.py:107: RuntimeWarning: The result contains negative eigenvalues. Please compare their magnitude with the magnitude of some of the largest positive eigenvalues. If the negative ones are smaller, it's probably safe to ignore them, but if they are large in magnitude, the results won't be useful. See the Notes section for more details. The smallest eigenvalue is -0.000124386384708 and the largest is 0.0808725816144.
+  RuntimeWarning
+/usr/local/lib/python2.7/dist-packages/skbio/stats/ordination/_principal_coordinate_analysis.py:107: RuntimeWarning: The result contains negative eigenvalues. Please compare their magnitude with the magnitude of some of the largest positive eigenvalues. If the negative ones are smaller, it's probably safe to ignore them, but if they are large in magnitude, the results won't be useful. See the Notes section for more details. The smallest eigenvalue is -0.0022458526843 and the largest is 0.0727095398658.
+  RuntimeWarning
+/usr/local/lib/python2.7/dist-packages/skbio/stats/ordination/_principal_coordinate_analysis.py:107: RuntimeWarning: The result contains negative eigenvalues. Please compare their magnitude with the magnitude of some of the largest positive eigenvalues. If the negative ones are smaller, it's probably safe to ignore them, but if they are large in magnitude, the results won't be useful. See the Notes section for more details. The smallest eigenvalue is -0.00158144755271 and the largest is 0.0863284574281.
+  RuntimeWarning
+
+[ 2016-07-26 07:42:56,600 - INFO ] Trying : make_bootstrapped_tree.py  --master_tree=jackknifed/unweighted_unifrac/upgma_cmp/master_tree.tre --support=jackknifed/unweighted_unifrac/upgma_cmp/jackknife_support.txt --output_file=jackknifed/unweighted_unifrac/upgma_cmp/jackknife_named_nodes_unweighted.pdf
+[ 2016-07-26 07:42:57,413 - INFO ] Trying : make_bootstrapped_tree.py  --master_tree=jackknifed/weighted_unifrac/upgma_cmp/master_tree.tre --support=jackknifed/weighted_unifrac/upgma_cmp/jackknife_support.txt --output_file=jackknifed/weighted_unifrac/upgma_cmp/jackknife_named_nodes_weighted.pdf
+[ 2016-07-26 07:42:58,223 - INFO ] Trying : mothur "#make.shared(biom=otus/otu_table_mc2_w_tax_no_pynast_failures.biom)"
+[ 2016-07-26 07:42:58,260 - INFO ] Trying : mothur "#metastats(shared=otus/otu_table_mc2_w_tax_no_pynast_failures.shared,design=MiSeq_paired-end_cell2015_subset.txt.ID_Treatment,processors=16)"
+[ 2016-07-26 07:43:06,408 - INFO ] Trying : mothur "#make.lefse(shared=otus/otu_table_mc2_w_tax_no_pynast_failures.shared,design=MiSeq_paired-end_cell2015_subset.txt.ID_Treatment)"
+[ 2016-07-26 07:43:06,421 - INFO ] Trying : ln -s -f ../split_lib_out/seqs.fna nephele_outputs/reads_used_for_analysis.fasta
+[ 2016-07-26 07:43:06,423 - INFO ] Trying : ln -s -f ../otus/otu_table_mc2_w_tax_no_pynast_failures.biom nephele_outputs/OTU_table.biom
+[ 2016-07-26 07:43:06,424 - INFO ] Trying : ln -s -f ../otus/rep_set.tre nephele_outputs/tree.tre
+[ 2016-07-26 07:43:06,426 - INFO ] Trying : ln -s -f ../otus/samples_being_ignored.txt nephele_outputs
+[ 2016-07-26 07:43:06,427 - INFO ] Trying : ln -s -f ../jackknifed/weighted_unifrac/upgma_cmp/jackknife_named_nodes_weighted.pdf nephele_outputs
+[ 2016-07-26 07:43:06,430 - INFO ] Trying : ln -s -f ../jackknifed/unweighted_unifrac/upgma_cmp/jackknife_named_nodes_unweighted.pdf nephele_outputs
+[ 2016-07-26 07:43:06,431 - INFO ] Trying : ln -s -f ../otus/otu_table_mc2_w_tax_no_pynast_failures.userLabel.week2-week0.metastats nephele_outputs
+[ 2016-07-26 07:43:06,433 - INFO ] Trying : ln -s -f ../otus/otu_table_mc2_w_tax_no_pynast_failures.biom.summary.txt nephele_outputs/otu_table.summary.txt
+[ 2016-07-26 07:43:06,434 - INFO ] Trying : ln -s -f ../config.csv nephele_outputs/job_parameters_run_settings.csv
+[ 2016-07-26 07:43:06,436 - INFO ] Trying : ln -s -f ../heat_map/heatmap.svg nephele_outputs
+[ 2016-07-26 07:43:06,437 - INFO ] Trying : ln -s -f /var/www/vfs/logfile.txt nephele_outputs
+[ 2016-07-26 07:43:06,438 - INFO ] Trying : ln -s -f ../CHIMERAS_FOUND.txt nephele_outputs
+[ 2016-07-26 07:43:06,440 - INFO ] Trying : ln -s -f ../taxa_plots nephele_outputs
+[ 2016-07-26 07:43:06,441 - INFO ] Trying : zip -r -q   WorkFolder.zip cfg.py taxa_plots MiSeq_paired-end_cell2015_subset.txt 4_S4_L001_R1_001s.fastq 25_S25_L001_R1_001s.fastq betadiv_params.txt neph_pipes_utils.py cfg.pyc 23_S23_L001_R1_001s.fastq ID.25 ID.24 heat_map common_utils.py mothur.1469533378.logfile 26_S26_L001_R2_001s.fastq 25_S25_L001_R2_001s.fastq 24_S24_L001_R2_001s.fastq ID.4 env.json nephele_outputs run.sh 3_S3_L001_R1_001s.fastq otussorted_otu_table.biom neph_pipes_utils.pyc core_diversity 6subset_Cell2015s.zip split_lib_out common_utils.pyc logfile.txt mothur.1469533386.logfile mothur.1469533132.logfile runtime.txt arguments.json 24_S24_L001_R1_001s.fastq ID.23 CHIMERAS_FOUND.txt config.csv ID.6 ID.5 otus MiSeq_paired-end_cell2015_subset.txt.orig ID.26 26_S26_L001_R1_001s.fastq ID.3 23_S23_L001_R2_001s.fastq MiSeq_paired-end_cell2015_subset.xlsx Pipeline_done.txt pqiime.py 4_S4_L001_R2_001s.fastq 3_S3_L001_R2_001s.fastq betadiv.py 5_S5_L001_R2_001s.fastq 6_S6_L001_R1_001s.fastq otus_params.txt 6_S6_L001_R2_001s.fastq MiSeq_paired-end_cell2015_subset.txt.ID_Treatment jackknifed 5_S5_L001_R1_001s.fastq
+[ 2016-07-26 07:44:42,341 - INFO ] Trying : zip -r -q    PipelineResults.zip joined_outs split_lib_out otus core_diversity heat_map jackknifed nephele_outputs HMP_compare_results validate_mapping_out_dir logfile.txt

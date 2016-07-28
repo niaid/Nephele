@@ -1,0 +1,316 @@
+Mon Jun 13 07:48:46 EDT 2016
+
+Mon Jun 13 07:48:46 EDT 2016 MiSeq Metagenomic Assembly pipeline started
+
+Mon Jun 13 07:48:46 EDT 2016 env.json=
+{
+  "Pipeline": "A5-MiSeq FASTQ Paired End",
+  "ImageId": "ami-212e014b",
+  "jobId": "NPV89Q6EPUTP",
+  "submitTime": "Mon, 13 Jun 2016 11:47:24 +0000",
+  "Bucket": "nephele-pipelines-qa",
+  "UserDescription": "",
+  "InstanceType": "c3.4xlarge"
+}
+Mon Jun 13 07:48:46 EDT 2016 number of cores=15
+
+Mon Jun 13 07:48:46 EDT 2016 Memory=30871068KB
+
+Mon Jun 13 07:48:46 EDT 2016 MiSeq Metagenomic Assembly pipeline configuration
+AMI_ID,ami-212e014b
+BLAST_STEP,YES
+INPUT_TYPE,
+InstanceType,c3.4xlarge
+LIB_FILE,NTCC8325.lib
+LOG_FILE,logfile.txt
+MEMORY,30871068
+NUM_OF_PROC,15
+PREFIX,ntcc
+R1,
+R2,
+ShareData,No
+UserDescription,
+ZIP_FILE,NTCC8325.zip
+pipelineName,A5-MiSeq FASTQ Paired End
+
+
+Mon Jun 13 07:48:46 EDT 2016 unzip -oqj NTCC8325.zip
+
+Mon Jun 13 07:48:47 EDT 2016 
+
+Mon Jun 13 07:48:47 EDT 2016 running gzip -d for *.gz files
+
+Mon Jun 13 07:48:48 EDT 2016 contents of LIB file:
+[LIB]
+p1=NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq
+p2=NTCC8325-s-AUREUS-ISOLATE_S1_L001_R2_001.fastq
+
+Mon Jun 13 07:48:48 EDT 2016 
+
+
+Mon Jun 13 07:48:48 EDT 2016 Running pipeline: 
+/opt/a5/bin/a5_pipeline.pl --threads=15 --end=5 NTCC8325.lib ntcc
+
+Mon Jun 13 08:03:20 EDT 2016 [a5] Found the following libraries:
+     raw1:
+      id=raw1
+      p1=NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq
+      p2=NTCC8325-s-AUREUS-ISOLATE_S1_L001_R2_001.fastq
+[a5] Cleaning reads with SGA
+cleaning each PE lib
+
+[a5] Found 1 libraries
+[a5] Starting pipeline at step 1
+[a5] Cleaning reads with SGA
+p1 is NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq
+Cleaning reads
+
+[a5] java -Xmx512m -jar /opt/a5/bin/trimmomatic.jar SE -threads 15 -phred33  ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.both.fastq ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.trim.fastq ILLUMINACLIP:/opt/a5/bin/../adapter.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+TrimmomaticSE: Started with arguments: -threads 15 -phred33 ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.both.fastq ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.trim.fastq ILLUMINACLIP:/opt/a5/bin/../adapter.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+Using PrefixPair: AGATGTGTATAAGAGACAG and AGATGTGTATAAGAGACAG
+Using PrefixPair: TACACTCTTTCCCTACACGACGCTCTTCCGATCT and TCTCGGCATTCCTGCTGAACCGCTCTTCCGATCT
+Using PrefixPair: TACACTCTTTCCCTACACGACGCTCTTCCGATCT and GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT
+Using Long Clipping Sequence: TTTTTTTTTTAATGATACGGCGACCACCGAGATCTACAC
+Using Long Clipping Sequence: TTTTTTTTTTCAAGCAGAAGACGGCATACGA
+Using Long Clipping Sequence: AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC
+Using Long Clipping Sequence: GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT
+Using Long Clipping Sequence: CTGTCTCTTATACACATCTGACGCTGCCGACGA
+Using Long Clipping Sequence: TACACTCTTTCCCTACACGACGCTCTTCCGATCT
+Using Long Clipping Sequence: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA
+Using Long Clipping Sequence: CTGTCTCTTATACACATCTCCGAGCCCACGAGAC
+Using Long Clipping Sequence: TCTCGGCATTCCTGCTGAACCGCTCTTCCGATCT
+Using Long Clipping Sequence: CTGTCTCTTATACACATCTCTGAGCGGGCTGGCAAGGC
+Using Long Clipping Sequence: AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAGA
+Using Long Clipping Sequence: GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG
+Using Long Clipping Sequence: CTGTCTCTTATACACATCTCTGATGGCGCGAGGGAGGC
+Using Long Clipping Sequence: GCCTCCCTCGCGCCATCAGAGATGTGTATAAGAGACAG
+Using Long Clipping Sequence: TCGTCGGCAGCGTCAGATGTGTATAAGAGACAG
+Using Long Clipping Sequence: GCCTTGCCAGCCCGCTCAGAGATGTGTATAAGAGACAG
+ILLUMINACLIP: Using 3 prefix pairs, 16 forward/reverse sequences, 0 forward only sequences, 0 reverse only sequences
+Input Reads: 277018 Surviving: 275515 (99.46%) Dropped: 1503 (0.54%)
+TrimmomaticSE: Completed successfully
+[a5] /opt/a5/bin/sga preprocess -q 25 -f 20 -m 35  --pe-mode=0  ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.trim.fastq > ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.both.pp 2> /dev/null
+[a5] sga index -d 7717767 -t 15 ntcc.s1/ntcc.pp.fastq > ntcc.s1/index.out 2> ntcc.s1/index.err
+[a5] /opt/a5/bin/sga correct -t 15 -p ntcc.pp -o ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.both.pp.ec.fastq ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.both.pp > ntcc.s1/raw1.correct.out
+[timer - sga::correct] wall clock: 21.65s CPU: 280.48s
+Running cat ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.both.repair.fastq >> ntcc.s1/ntcc.ec.fastq
+Done merging libraries
+[a5_s2] Building contigs from ntcc.ec.fastq with IDBA
+[a5_s2] Building contigs from ntcc.ec.fastq with IDBA
+[a5] ntcc.s2/ntcc.ec.fasta has 65895382 bytes of FastA sequence data
+[a5] /opt/a5/bin/idba_ud500 --num_threads 15 -r ntcc.s2/ntcc.ec.fasta  -o ntcc.s2/ntcc --mink 35 --maxk 249 --min_pairs 2 
+[a5] Preprocess libraries for scaffolding with SSPACE
+[a5] Making initial estimates of insert size
+[bwa_index] Pack FASTA... 0.01 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.54 seconds elapse.
+[bwa_index] Update BWT... 0.01 sec
+[bwa_index] Pack forward-only FASTA... 0.01 sec
+[bwa_index] Construct SA from BWT and Occ... 0.25 sec
+[main] Version: 0.7.5a-r405
+[main] CMD: /opt/a5/bin/bwa index ntcc.contigs.fasta
+[main] Real time: 1.909 sec; CPU: 0.834 sec
+[a5] Using 40000 read pairs for mapping
+[a5] java -jar -Xmx512m /opt/a5/bin/GetInsertSize.jar ntcc.raw1.sub.pe.sam
+[a5] Will merge libraries if similar enough
+[a5] aggregating libraries. n = 1
+[bwa_index] Pack FASTA... 0.01 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.56 seconds elapse.
+[bwa_index] Update BWT... 0.02 sec
+[bwa_index] Pack forward-only FASTA... 0.01 sec
+[bwa_index] Construct SA from BWT and Occ... 0.25 sec
+[main] Version: 0.7.5a-r405
+[main] CMD: /opt/a5/bin/bwa index ntcc.contigs.fasta
+[main] Real time: 1.041 sec; CPU: 0.865 sec
+[a5] Using 40000 read pairs for mapping
+[a5] java -jar -Xmx512m /opt/a5/bin/GetInsertSize.jar ntcc.raw1.sub.pe.sam
+[a5] Printing preprocessed library file to ntcc.preproc.libs
+[a5] Processed libraries:
+     raw1:
+      id=raw1
+      p1=ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.split.r1.fq
+      p2=ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.split.r2.fq
+      rc=0
+      ins=286
+      err=0.95
+      nlibs=1
+      libfile=ntcc.library_1.txt
+[a5_s3] Scaffolding contigs from ntcc.contigs.fasta with SSPACE
+[a5] Total contig length 2789350
+[a5] raw1: Insert 286, coverage 12.34, expected links 14
+[a5] SSPACE -m 25 -n 11 -k 1 -a 0.4 -o 1 -x 0 -l ntcc.library_1.txt -s ntcc.contigs.fasta -b ntcc.raw1 -d ntcc.s3 > ntcc.s3/ntcc.raw1.out
+[a5_s3] Scaffolding contigs from ntcc.contigs.fasta with SSPACE
+[a5_s4] Detecting and breaking misassemblies in ntcc.crude.scaffolds.fasta with A5QC
+[a5] Identifying misassemblies in ntcc.crude.scaffolds.fasta with ntcc.qc.libraw1
+[bwa_index] Pack FASTA... 0.01 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.54 seconds elapse.
+[bwa_index] Update BWT... 0.01 sec
+[bwa_index] Pack forward-only FASTA... 0.02 sec
+[bwa_index] Construct SA from BWT and Occ... 0.24 sec
+[main] Version: 0.7.5a-r405
+[main] CMD: /opt/a5/bin/bwa index ntcc.crude.scaffolds.fasta
+[main] Real time: 0.960 sec; CPU: 0.831 sec
+[M::main_mem] read 274216 sequences (53146732 bp)...
+[main] Version: 0.7.5a-r405
+[main] CMD: /opt/a5/bin/bwa mem -M -t 15 ntcc.crude.scaffolds.fasta -
+[main] Real time: 5.215 sec; CPU: 18.785 sec
+[bam_header_read] EOF marker is absent. The input is probably truncated.
+[bam_header_read] EOF marker is absent. The input is probably truncated.
+[samopen] SAM header is present: 60 sequences.
+[a5] java -Xmx19897m -jar A5qc.jar ntcc.s4/ntcc.qc.libraw1.sam ntcc.crude.scaffolds.fasta ntcc.s4/ntcc.qc.libraw1.broken.fasta 1 > ntcc.s4/ntcc.qc.libraw1.qc.out
+[a5_s5] No misassemblies found.
+[a5] bwa index ntcc.final.scaffolds.fasta
+[bwa_index] Pack FASTA... 0.01 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.53 seconds elapse.
+[bwa_index] Update BWT... 0.02 sec
+[bwa_index] Pack forward-only FASTA... 0.02 sec
+[bwa_index] Construct SA from BWT and Occ... 0.26 sec
+[main] Version: 0.7.5a-r405
+[main] CMD: /opt/a5/bin/bwa index ntcc.final.scaffolds.fasta
+[main] Real time: 0.977 sec; CPU: 0.847 sec
+[a5] bwa mem -t 15 ntcc.final.scaffolds.fasta ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.split.r1.fq ntcc.s1/NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq.split.r2.fq 2> /dev/null | /opt/a5/bin/samtools view -b -S - | /opt/a5/bin/samtools sort - ntcc.raw1.pe.sort
+[bam_header_read] EOF marker is absent. The input is probably truncated.
+[samopen] SAM header is present: 60 sequences.
+[a5] samtools index ntcc.raw1.pe.sort.bam
+[mpileup] 1 samples in 1 input files
+[a5] Library raw1 avg. insert size 401 +/- 229
+[mpileup] 1 samples in 1 input files
+<mpileup> Set max per-file depth to 8000
+[bcfview] 100000 sites processed.
+[afs] 0:99986.967 1:13.033 2:0.000
+[bcfview] 200000 sites processed.
+[afs] 0:99924.077 1:75.923 2:0.000
+[bcfview] 300000 sites processed.
+[afs] 0:99985.759 1:14.241 2:0.000
+[bcfview] 400000 sites processed.
+[afs] 0:99970.858 1:29.142 2:0.000
+[bcfview] 500000 sites processed.
+[afs] 0:99975.715 1:24.285 2:0.000
+[bcfview] 600000 sites processed.
+[afs] 0:99988.350 1:11.650 2:0.000
+[bcfview] 700000 sites processed.
+[afs] 0:99984.472 1:15.528 2:0.000
+[bcfview] 800000 sites processed.
+[afs] 0:99944.792 1:55.205 2:0.003
+[bcfview] 900000 sites processed.
+[afs] 0:99991.669 1:8.331 2:0.000
+[bcfview] 1000000 sites processed.
+[afs] 0:99996.217 1:3.003 2:0.780
+[bcfview] 1100000 sites processed.
+[afs] 0:99968.575 1:31.425 2:0.000
+[bcfview] 1200000 sites processed.
+[afs] 0:99950.258 1:49.742 2:0.000
+[bcfview] 1300000 sites processed.
+[afs] 0:99991.280 1:8.720 2:0.000
+[bcfview] 1400000 sites processed.
+[afs] 0:99995.166 1:4.834 2:0.000
+[bcfview] 1500000 sites processed.
+[afs] 0:99990.478 1:9.522 2:0.000
+[bcfview] 1600000 sites processed.
+[afs] 0:99983.401 1:16.591 2:0.008
+[bcfview] 1700000 sites processed.
+[afs] 0:99969.597 1:30.401 2:0.002
+[bcfview] 1800000 sites processed.
+[afs] 0:99996.558 1:3.442 2:0.000
+[bcfview] 1900000 sites processed.
+[afs] 0:99980.727 1:18.646 2:0.626
+[bcfview] 2000000 sites processed.
+[afs] 0:99970.075 1:29.925 2:0.000
+[bcfview] 2100000 sites processed.
+[afs] 0:99954.666 1:45.334 2:0.000
+[bcfview] 2200000 sites processed.
+[afs] 0:99982.584 1:17.408 2:0.008
+[bcfview] 2300000 sites processed.
+[afs] 0:99989.511 1:10.458 2:0.031
+[bcfview] 2400000 sites processed.
+[afs] 0:99981.346 1:18.653 2:0.001
+[bcfview] 2500000 sites processed.
+[afs] 0:99964.981 1:35.019 2:0.000
+[bcfview] 2600000 sites processed.
+[afs] 0:99946.655 1:53.341 2:0.004
+[bcfview] 2700000 sites processed.
+[afs] 0:99987.715 1:12.285 2:0.000
+[afs] 0:92229.950 1:51.202 2:0.849
+[a5] Corrected 130196 base(s) in consensus sequence
+[a5] Median depth of coverage: 16, 10th percentile: 8
+[a5] 2737361 / 2791350 bases at or above Q40
+[a5] Total size: 2791957 nt, scaffolds: 60, max 725870, N50 146122, 32.6% GC
+[a5] Total reads used: 277018, Error Corrected reads used: 274950, Pct of reads that passed EC step: 99.25
+[a5] Total bases used: 54704176, Error Corrected bases used: 53285997, Pct of bases that passed EC step: 97.41
+[a5] Raw coverage: 19.59
+[a5] EC coverage: 19.09
+[a5] Final assembly in ntcc.final.scaffolds.fasta
+
+Mon Jun 13 08:03:20 EDT 2016 Executing:./blast2nr.sh ntcc 15
+
+Tue Jun 14 19:22:55 EDT 2016 running blastx
+Mon Jun 13 08:03:20 EDT 2016
+blast step done
+Tue Jun 14 19:22:55 EDT 2016
+
+Tue Jun 14 19:22:55 EDT 2016 MiSeq Metagenomic Assembly pipeline DONE
+Tue Jun 14 19:22:55 EDT 2016
+  adding: NTCC8325-s-AUREUS-ISOLATE_S1_L001_R1_001.fastq (deflated 73%)
+  adding: NTCC8325-s-AUREUS-ISOLATE_S1_L001_R2_001.fastq (deflated 69%)
+  adding: NTCC8325.lib (deflated 40%)
+  adding: NTCC8325.zip (stored 0%)
+  adding: Pipeline_done.txt (stored 0%)
+  adding: README.md (deflated 43%)
+  adding: adapter.fasta (deflated 71%)
+  adding: blast2nr.sh (deflated 38%)
+  adding: config.csv (deflated 15%)
+  adding: env.json (deflated 25%)
+  adding: exit_script.sh (deflated 46%)
+  adding: logfile.txt (deflated 72%)
+  adding: ngopt.py (deflated 68%)
+  adding: ntcc.assembly_stats.csv (deflated 29%)
+  adding: ntcc.broken.scaffolds.fasta (deflated 71%)
+  adding: ntcc.contigs.fasta (deflated 71%)
+  adding: ntcc.crude.scaffolds.fasta (deflated 71%)
+  adding: ntcc.ec.fastq.gz (deflated 0%)
+  adding: ntcc.final.scaffolds.blastn_t4x.txt (deflated 82%)
+  adding: ntcc.final.scaffolds.fasta (deflated 71%)
+  adding: ntcc.final.scaffolds.fastq (deflated 77%)
+  adding: ntcc.final.scaffolds.qvl (deflated 95%)
+  adding: ntcc.library_1.txt (deflated 42%)
+  adding: ntcc.library_1.txt.strict (deflated 42%)
+  adding: ntcc.preproc.libs (deflated 35%)
+  adding: ntcc.raw1.pe.sort.bam (deflated 0%)
+  adding: ntcc.raw1.pe.sort.bam.bai (deflated 66%)
+  adding: ntcc.s1/ (stored 0%)
+  adding: ntcc.s1/index.out (deflated 49%)
+  adding: ntcc.s1/ntcc.merged.clean.unpaired.fa (deflated 65%)
+  adding: ntcc.s1/index.err (deflated 42%)
+  adding: ntcc.s1/raw1.correct.out (deflated 40%)
+  adding: ntcc.s2/ (stored 0%)
+  adding: ntcc.s2/idba.out (deflated 70%)
+  adding: ntcc.s3/ (stored 0%)
+  adding: ntcc.s3/intermediate_results/ (stored 0%)
+  adding: ntcc.s3/intermediate_results/ntcc.raw1.raw1.scaffolds (deflated 62%)
+  adding: ntcc.s3/intermediate_results/ntcc.raw1.raw1.scaffolds.evidence (deflated 77%)
+  adding: ntcc.s3/intermediate_results/ntcc.raw1.extendedcontigs.fasta (deflated 71%)
+  adding: ntcc.s3/intermediate_results/ntcc.raw1.raw1.scaffolds.fasta (deflated 71%)
+  adding: ntcc.s3/ntcc.raw1.final.evidence (deflated 77%)
+  adding: ntcc.s3/pairinfo/ (stored 0%)
+  adding: ntcc.s3/pairinfo/ntcc.raw1.raw1.pairing_issues (deflated 91%)
+  adding: ntcc.s3/pairinfo/ntcc.raw1.raw1.pairing_distribution.csv (deflated 64%)
+  adding: ntcc.s3/ntcc.raw1.summaryfile.txt (deflated 71%)
+  adding: ntcc.s3/ntcc.raw1.logfile.txt (deflated 69%)
+  adding: ntcc.s3/ntcc.raw1.out (deflated 72%)
+  adding: ntcc.s4/ (stored 0%)
+  adding: ntcc.s4/ntcc.qc.libraw1.qc.out (deflated 77%)
+  adding: ntcc.s4/ntcc.qc.libraw1.index.out (stored 0%)
+  adding: run (deflated 54%)
+WorkFolder.zip created
+  adding: logfile.txt (deflated 73%)
+  adding: ntcc.assembly_stats.csv (deflated 29%)
+  adding: ntcc.broken.scaffolds.fasta (deflated 71%)
+  adding: ntcc.contigs.fasta (deflated 71%)
+  adding: ntcc.crude.scaffolds.fasta (deflated 71%)
+  adding: ntcc.final.scaffolds.blastn_t4x.txt (deflated 82%)
+  adding: ntcc.final.scaffolds.fasta (deflated 71%)
+  adding: ntcc.final.scaffolds.fastq (deflated 77%)
+  adding: ntcc.final.scaffolds.qvl (deflated 95%)

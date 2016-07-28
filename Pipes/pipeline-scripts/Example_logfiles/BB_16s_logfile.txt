@@ -1,0 +1,219 @@
+{
+  "Pipeline": "BioBakery SFF or FASTQ",
+  "ImageId": "ami-c84f66a2",
+  "jobId": "NT6UMD6O4TVL",
+  "submitTime": "Tue, 8 Mar 2016 20:26:01 +0000",
+  "Bucket": "nephele-pipelines",
+  "UserDescription": "",
+  "InstanceType": "c3.8xlarge"
+}Tue Mar  8 16:36:57 EST 2016 number of cores=31
+Tue Mar  8 16:37:01 EST 2016 Memory=61598876KB
+Tue Mar  8 16:37:01 EST 2016 BioBakery pipeline configuration
+AMI_ID,ami-c84f66a2
+BB_WORK_DIR,bb_work_dir44
+INPUT_TYPE,BioBakery_16s
+InstanceType,c3.8xlarge
+LOG_FILE,logfile.txt
+MAP_FILE,mice_mapping-2.txt
+MEMORY,61598876
+NUM_OF_PROC,31
+PIPELINE_TYPE,16s
+PLATFORM,Illumina
+READS_ZIP,mice.zip
+SAMPLE_TYPE,mouse_gut
+STUDY_TITLE,test
+UserDescription,
+pipelineName,BioBakery SFF or FASTQ
+
+Archive:  ./mice.zip
+  inflating: C.1.TAAGGCGA.CTCTC.L001.R1.001.fastq.gz  
+  inflating: C.1.TAAGGCGA.CTCTC.L001.R2.001.fastq.gz  
+  inflating: C.5.TAAGGCGA.AGAGT.L002.R1.001.fastq.gz  
+  inflating: C.5.TAAGGCGA.AGAGT.L002.R2.001.fastq.gz  
+  inflating: CB.1.CGTACTAG.CTCTC.L001.R1.001.fastq.gz  
+  inflating: CB.1.CGTACTAG.CTCTC.L001.R2.001.fastq.gz  
+  inflating: CB.5.CGTACTAG.AGAGT.L002.R1.001.fastq.gz  
+  inflating: CB.5.CGTACTAG.AGAGT.L002.R2.001.fastq.gz  
+  inflating: E.1.AGGCAGAA.CTCTC.L001.R1.001.fastq.gz  
+  inflating: E.1.AGGCAGAA.CTCTC.L001.R2.001.fastq.gz  
+  inflating: E.5.AGGCAGAA.AGAGT.L002.R1.001.fastq.gz  
+  inflating: E.5.AGGCAGAA.AGAGT.L002.R2.001.fastq.gz  
+  inflating: EB.1.TCCTGAGC.CTCTC.L001.R1.001.fastq.gz  
+  inflating: EB.1.TCCTGAGC.CTCTC.L001.R2.001.fastq.gz  
+  inflating: EB.5.TCCTGAGC.AGAGT.L002.R1.001.fastq.gz  
+  inflating: EB.5.TCCTGAGC.AGAGT.L002.R2.001.fastq.gz  
+Tue Mar  8 16:38:59 EST 2016 reads unarchived
+Tue Mar  8 16:38:59 EST 2016 Running mibc_build initialize-project
+Tue Mar  8 16:38:59 EST 2016 executing:mibc_build initialize-project study_description: test sample_type: mouse_gut filename: 16s_data: yes study_title: test platform: Illumina visualize: yes
+Tue Mar  8 16:39:24 EST 2016 Running mibc_build runproject
+Tue Mar  8 16:39:24 EST 2016 executing:mibc_build runproject --project bb_work_dir44/ --reporter=verbose >> /var/lib/tomcat7/webapps/vfs/logfile.txt 2>&1
+Tue Mar  8 16:39:26 EST 2016 Pipeline DONE
+Tue Mar  8 16:39:26 EST 2016
+Hit http://us-east-1.ec2.archive.ubuntu.com precise Release.gpg
+Get:1 http://us-east-1.ec2.archive.ubuntu.com precise-updates Release.gpg [198 B]
+Get:2 http://us-east-1.ec2.archive.ubuntu.com precise-backports Release.gpg [198 B]
+Hit http://us-east-1.ec2.archive.ubuntu.com precise Release
+Get:3 http://us-east-1.ec2.archive.ubuntu.com precise-updates Release [55.4 kB]
+Get:4 http://security.ubuntu.com precise-security Release.gpg [198 B]
+Get:5 http://us-east-1.ec2.archive.ubuntu.com precise-backports Release [55.5 kB]
+Get:6 http://security.ubuntu.com precise-security Release [55.5 kB]
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/main Sources
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/restricted Sources
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/universe Sources
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/multiverse Sources
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/main amd64 Packages
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/restricted amd64 Packages
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/universe amd64 Packages
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/multiverse amd64 Packages
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/main i386 Packages
+Get:7 http://security.ubuntu.com precise-security/main Sources [140 kB]
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/restricted i386 Packages
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/universe i386 Packages
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/multiverse i386 Packages
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/main TranslationIndex
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/multiverse TranslationIndex
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/restricted TranslationIndex
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/universe TranslationIndex
+Get:8 http://us-east-1.ec2.archive.ubuntu.com precise-updates/main Sources [494 kB]
+Get:9 http://us-east-1.ec2.archive.ubuntu.com precise-updates/restricted Sources [8,708 B]
+Get:10 http://us-east-1.ec2.archive.ubuntu.com precise-updates/universe Sources [124 kB]
+Get:11 http://us-east-1.ec2.archive.ubuntu.com precise-updates/multiverse Sources [10.2 kB]
+Get:12 http://us-east-1.ec2.archive.ubuntu.com precise-updates/main amd64 Packages [979 kB]
+Get:13 http://us-east-1.ec2.archive.ubuntu.com precise-updates/restricted amd64 Packages [16.2 kB]
+Get:14 http://us-east-1.ec2.archive.ubuntu.com precise-updates/universe amd64 Packages [272 kB]
+Get:15 http://us-east-1.ec2.archive.ubuntu.com precise-updates/multiverse amd64 Packages [16.9 kB]
+Get:16 http://security.ubuntu.com precise-security/universe Sources [45.7 kB]
+Get:17 http://us-east-1.ec2.archive.ubuntu.com precise-updates/main i386 Packages [1,039 kB]
+Get:18 http://security.ubuntu.com precise-security/main amd64 Packages [592 kB]
+Get:19 http://us-east-1.ec2.archive.ubuntu.com precise-updates/restricted i386 Packages [16.1 kB]
+Get:20 http://us-east-1.ec2.archive.ubuntu.com precise-updates/universe i386 Packages [282 kB]
+Get:21 http://security.ubuntu.com precise-security/universe amd64 Packages [129 kB]
+Get:22 http://us-east-1.ec2.archive.ubuntu.com precise-updates/multiverse i386 Packages [17.1 kB]
+Get:23 http://us-east-1.ec2.archive.ubuntu.com precise-updates/main TranslationIndex [208 B]
+Get:24 http://us-east-1.ec2.archive.ubuntu.com precise-updates/multiverse TranslationIndex [202 B]
+Get:25 http://us-east-1.ec2.archive.ubuntu.com precise-updates/restricted TranslationIndex [202 B]
+Get:26 http://us-east-1.ec2.archive.ubuntu.com precise-updates/universe TranslationIndex [205 B]
+Get:27 http://us-east-1.ec2.archive.ubuntu.com precise-backports/main Sources [5,922 B]
+Get:28 http://us-east-1.ec2.archive.ubuntu.com precise-backports/restricted Sources [28 B]
+Get:29 http://us-east-1.ec2.archive.ubuntu.com precise-backports/universe Sources [43.5 kB]
+Get:30 http://us-east-1.ec2.archive.ubuntu.com precise-backports/multiverse Sources [5,750 B]
+Get:31 http://us-east-1.ec2.archive.ubuntu.com precise-backports/main amd64 Packages [6,477 B]
+Get:32 http://security.ubuntu.com precise-security/main i386 Packages [651 kB]
+Get:33 http://us-east-1.ec2.archive.ubuntu.com precise-backports/restricted amd64 Packages [28 B]
+Get:34 http://us-east-1.ec2.archive.ubuntu.com precise-backports/universe amd64 Packages [45.8 kB]
+Get:35 http://us-east-1.ec2.archive.ubuntu.com precise-backports/multiverse amd64 Packages [5,419 B]
+Get:36 http://us-east-1.ec2.archive.ubuntu.com precise-backports/main i386 Packages [6,478 B]
+Get:37 http://us-east-1.ec2.archive.ubuntu.com precise-backports/restricted i386 Packages [28 B]
+Get:38 http://security.ubuntu.com precise-security/universe i386 Packages [137 kB]
+Get:39 http://us-east-1.ec2.archive.ubuntu.com precise-backports/universe i386 Packages [45.6 kB]
+Get:40 http://us-east-1.ec2.archive.ubuntu.com precise-backports/multiverse i386 Packages [5,413 B]
+Get:41 http://us-east-1.ec2.archive.ubuntu.com precise-backports/main TranslationIndex [202 B]
+Get:42 http://us-east-1.ec2.archive.ubuntu.com precise-backports/multiverse TranslationIndex [202 B]
+Get:43 http://us-east-1.ec2.archive.ubuntu.com precise-backports/restricted TranslationIndex [193 B]
+Get:44 http://us-east-1.ec2.archive.ubuntu.com precise-backports/universe TranslationIndex [205 B]
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/main Translation-en
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/multiverse Translation-en
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/restricted Translation-en
+Get:45 http://security.ubuntu.com precise-security/main TranslationIndex [208 B]
+Hit http://us-east-1.ec2.archive.ubuntu.com precise/universe Translation-en
+Get:46 http://us-east-1.ec2.archive.ubuntu.com precise-updates/main Translation-en [412 kB]
+Get:47 http://security.ubuntu.com precise-security/universe TranslationIndex [205 B]
+Get:48 http://security.ubuntu.com precise-security/main Translation-en [250 kB]
+Get:49 http://security.ubuntu.com precise-security/universe Translation-en [82.6 kB]
+Get:50 http://us-east-1.ec2.archive.ubuntu.com precise-updates/multiverse Translation-en [9,806 B]
+Get:51 http://us-east-1.ec2.archive.ubuntu.com precise-updates/restricted Translation-en [3,869 B]
+Get:52 http://us-east-1.ec2.archive.ubuntu.com precise-updates/universe Translation-en [164 kB]
+Get:53 http://us-east-1.ec2.archive.ubuntu.com precise-backports/main Translation-en [5,737 B]
+Get:54 http://us-east-1.ec2.archive.ubuntu.com precise-backports/multiverse Translation-en [4,852 B]
+Get:55 http://us-east-1.ec2.archive.ubuntu.com precise-backports/restricted Translation-en [28 B]
+Get:56 http://us-east-1.ec2.archive.ubuntu.com precise-backports/universe Translation-en [35.6 kB]
+Fetched 6,280 kB in 44s (142 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+zip is already the newest version.
+The following packages were automatically installed and are no longer required:
+  linux-headers-3.2.0-69 linux-headers-3.2.0-69-virtual python-twisted-names
+Use 'apt-get autoremove' to remove them.
+0 upgraded, 0 newly installed, 0 to remove and 32 not upgraded.
+  adding: Pipeline_done.txt (stored 0%)
+  adding: README.md (deflated 28%)
+  adding: bb_work_dir44/ (stored 0%)
+  adding: bb_work_dir44/C.1.TAAGGCGA.CTCTC.L001.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/map.txt (deflated 75%)
+  adding: bb_work_dir44/CB.5.CGTACTAG.AGAGT.L002.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/CB.1.CGTACTAG.CTCTC.L001.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/E.5.AGGCAGAA.AGAGT.L002.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/C.5.TAAGGCGA.AGAGT.L002.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/CB.5.CGTACTAG.AGAGT.L002.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/C.5.TAAGGCGA.AGAGT.L002.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/EB.5.TCCTGAGC.AGAGT.L002.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/C.1.TAAGGCGA.CTCTC.L001.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/CB.1.CGTACTAG.CTCTC.L001.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/EB.5.TCCTGAGC.AGAGT.L002.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/EB.1.TCCTGAGC.CTCTC.L001.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/E.5.AGGCAGAA.AGAGT.L002.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/E.1.AGGCAGAA.CTCTC.L001.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/E.1.AGGCAGAA.CTCTC.L001.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/EB.1.TCCTGAGC.CTCTC.L001.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/metadata.txt (deflated 71%)
+  adding: config.csv (deflated 36%)
+  adding: exit_script.sh (deflated 44%)
+  adding: logfile.txt (deflated 81%)
+  adding: run (deflated 55%)
+  adding: META-INF/ (stored 0%)
+  adding: META-INF/maven/ (stored 0%)
+  adding: META-INF/maven/gov.nih.niaid.bcbb/ (stored 0%)
+  adding: META-INF/maven/gov.nih.niaid.bcbb/NimbusVfs/ (stored 0%)
+  adding: META-INF/maven/gov.nih.niaid.bcbb/NimbusVfs/pom.xml (deflated 78%)
+  adding: META-INF/maven/gov.nih.niaid.bcbb/NimbusVfs/pom.properties (deflated 2%)
+  adding: META-INF/MANIFEST.MF (deflated 18%)
+  adding: META-INF/context.xml (deflated 6%)
+  adding: Pipeline_done.txt (stored 0%)
+  adding: README.md (deflated 28%)
+  adding: WEB-INF/ (stored 0%)
+  adding: WEB-INF/web.xml (deflated 66%)
+  adding: WEB-INF/lib/ (stored 0%)
+  adding: WEB-INF/lib/commons-httpclient-3.1.jar (deflated 8%)
+  adding: WEB-INF/lib/commons-logging-1.0.4.jar (deflated 9%)
+  adding: WEB-INF/lib/log4j-1.2.17.jar (deflated 10%)
+  adding: WEB-INF/lib/commons-codec-1.2.jar (deflated 13%)
+  adding: WEB-INF/lib/commons-io-2.2.jar (deflated 9%)
+  adding: WEB-INF/lib/commons-fileupload-1.3.1.jar (deflated 13%)
+  adding: WEB-INF/classes/ (stored 0%)
+  adding: WEB-INF/classes/gov/ (stored 0%)
+  adding: WEB-INF/classes/gov/nih/ (stored 0%)
+  adding: WEB-INF/classes/gov/nih/niaid/ (stored 0%)
+  adding: WEB-INF/classes/gov/nih/niaid/bcbb/ (stored 0%)
+  adding: WEB-INF/classes/gov/nih/niaid/bcbb/nimbusvfs/ (stored 0%)
+  adding: WEB-INF/classes/gov/nih/niaid/bcbb/nimbusvfs/NewServletListener.class (deflated 51%)
+  adding: WEB-INF/classes/gov/nih/niaid/bcbb/nimbusvfs/ProxyServlet.class (deflated 57%)
+  adding: WEB-INF/classes/log4j.properties (deflated 44%)
+  adding: WorkFolder.zip (deflated 0%)
+  adding: arguments.json (deflated 30%)
+  adding: bb_work_dir44/ (stored 0%)
+  adding: bb_work_dir44/C.1.TAAGGCGA.CTCTC.L001.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/map.txt (deflated 75%)
+  adding: bb_work_dir44/CB.5.CGTACTAG.AGAGT.L002.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/CB.1.CGTACTAG.CTCTC.L001.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/E.5.AGGCAGAA.AGAGT.L002.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/C.5.TAAGGCGA.AGAGT.L002.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/CB.5.CGTACTAG.AGAGT.L002.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/C.5.TAAGGCGA.AGAGT.L002.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/EB.5.TCCTGAGC.AGAGT.L002.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/C.1.TAAGGCGA.CTCTC.L001.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/CB.1.CGTACTAG.CTCTC.L001.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/EB.5.TCCTGAGC.AGAGT.L002.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/EB.1.TCCTGAGC.CTCTC.L001.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/E.5.AGGCAGAA.AGAGT.L002.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/E.1.AGGCAGAA.CTCTC.L001.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/E.1.AGGCAGAA.CTCTC.L001.R1.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/EB.1.TCCTGAGC.CTCTC.L001.R2.001.fastq.gz (deflated 0%)
+  adding: bb_work_dir44/metadata.txt (deflated 71%)
+  adding: biobakery.py (deflated 64%)
+  adding: config.csv (deflated 36%)
+  adding: env.json (deflated 27%)
+  adding: exit_script.sh (deflated 44%)
+  adding: logfile.txt (deflated 83%)
+  adding: run (deflated 55%)

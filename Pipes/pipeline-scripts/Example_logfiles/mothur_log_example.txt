@@ -1,0 +1,121 @@
+Tue Mar 15 17:20:31 EDT 2016
+[ 2016-07-26 07:29:12,794 - WARNING ] Not sure what to do with param STABILITY_FILE, set to rawfile.files; ignoring.
+[ 2016-07-26 07:29:12,957 - WARNING ] Not sure what to do with param UserDescription, set to github_log; ignoring.
+[ 2016-07-26 07:29:12,957 - WARNING ] Not sure what to do with param LOG_FILE, set to logfile.txt; ignoring.
+[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param RUN_SCRIPT, set to run; ignoring.
+[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param Email, set to ian.misner@nih.gov; ignoring.
+[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param AMI_LOGIN, set to ubuntu; ignoring.
+[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param AMI_ID, set to ami-6810de05; ignoring.
+[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param TEST_FILES, set to https://s3.amazonaws.com/nephele-docs/Test-Files/QIIME-MiSeq/MiSeq.zip;https://s3.amazonaws.com/nephele-docs/Test-Files/QIIME-MiSeq/map.txt; ignoring.
+[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param ShareData, set to No; ignoring.
+[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param UseCode, set to UCGOBCBB; ignoring.
+[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param PEM_FILE, set to /home/macmenaminpe/.ec2/philip_macm.pem; ignoring.
+[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param pipelineName, set to Mothur FASTQ Paired End; ignoring.
+[ 2016-07-26 07:29:12,958 - WARNING ] Not sure what to do with param InstanceType, set to c3.4xlarge; ignoring.
+[ 2016-07-26 07:29:13,671 - INFO ] File MiSeq_paired-end_cell2015_subset.csv exists as expected.
+[ 2016-07-26 07:29:13,671 - INFO ] File 3_S3_L001_R1_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,671 - INFO ] File 3_S3_L001_R2_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,671 - INFO ] File 4_S4_L001_R1_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,671 - INFO ] File 4_S4_L001_R2_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,672 - INFO ] File 5_S5_L001_R1_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,672 - INFO ] File 5_S5_L001_R2_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,672 - INFO ] File 6_S6_L001_R1_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,672 - INFO ] File 6_S6_L001_R2_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,672 - INFO ] File 23_S23_L001_R1_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,672 - INFO ] File 23_S23_L001_R2_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,672 - INFO ] File 24_S24_L001_R1_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,672 - INFO ] File 24_S24_L001_R2_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,672 - INFO ] File 25_S25_L001_R1_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,672 - INFO ] File 25_S25_L001_R2_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,672 - INFO ] File 26_S26_L001_R1_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,672 - INFO ] File 26_S26_L001_R2_001s.fastq exists as expected.
+[ 2016-07-26 07:29:13,673 - INFO ] File fileList.paired.file exists as expected.
+[ 2016-07-26 07:29:13,673 - INFO ] mothur "#make.contigs(seed=clear,file=fileList.paired.file,processors=16)"
+[ 2016-07-26 07:29:58,377 - INFO ] File fileList.paired.trim.contigs.fasta exists as expected.
+[ 2016-07-26 07:29:58,377 - INFO ] mothur "#summary.seqs(seed=clear,fasta=fileList.paired.trim.contigs.fasta,processors=16)"
+[ 2016-07-26 07:29:58,607 - INFO ] File fileList.paired.trim.contigs.summary exists as expected.
+[ 2016-07-26 07:29:58,607 - INFO ] mothur "#screen.seqs(seed=clear,fasta=fileList.paired.trim.contigs.fasta,group=fileList.paired.contigs.groups,maxambig=0,maxlength=300)"
+[ 2016-07-26 07:30:00,372 - INFO ] File fileList.paired.trim.contigs.good.fasta exists as expected.
+[ 2016-07-26 07:30:00,372 - INFO ] mothur "#unique.seqs(seed=clear,fasta=fileList.paired.trim.contigs.good.fasta)"
+[ 2016-07-26 07:30:01,558 - INFO ] File fileList.paired.trim.contigs.good.names exists as expected.
+[ 2016-07-26 07:30:01,558 - INFO ] File fileList.paired.trim.contigs.good.unique.fasta exists as expected.
+[ 2016-07-26 07:30:01,558 - INFO ] ./betadiv.py  --user_seqs=fileList.paired.file --body_site=Saliva --map_file=MiSeq_paired-end_cell2015_subset.csv --hmp_database=SILVA_99 --nearest_n_samples=7 --region_dacc=v1v3
+[ 2016-07-26 09:14:15,247 - INFO ] mothur "#count.seqs(seed=clear,name=fileList.paired.trim.contigs.good.names,group=fileList.paired.contigs.good.groups)"
+[ 2016-07-26 09:14:15,765 - INFO ] File fileList.paired.trim.contigs.good.count_table exists as expected.
+[ 2016-07-26 09:14:15,788 - INFO ] File fileList.paired.trim.contigs.good.unique.first1000.fasta exists as expected.
+[ 2016-07-26 09:14:15,788 - INFO ] mothur "#align.seqs(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.first1000.fasta,reference=/home/ubuntu/ref_dbs/silva/SILVA_SEED.v123.fasta,flip=T,processors=16)"
+[ 2016-07-26 09:18:26,536 - INFO ] File fileList.paired.trim.contigs.good.unique.first1000.align exists as expected.
+[ 2016-07-26 09:18:26,537 - INFO ] mothur "#summary.seqs(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.first1000.align,processors=16)" > first_K_summary.txt
+[ 2016-07-26 09:18:26,717 - INFO ] File first_K_summary.txt exists as expected.
+[ 2016-07-26 09:18:26,717 - INFO ] mothur "#pcr.seqs(seed=clear,fasta=/home/ubuntu/ref_dbs/silva/SILVA_SEED.v123.fasta,start=13862,end=23444,keepdots=F,processors=16)"
+[ 2016-07-26 09:18:31,358 - INFO ] mothur "#align.seqs(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.fasta,reference=PCR_out.customized_region.align,flip=T,processors=16)"
+[ 2016-07-26 09:18:50,264 - INFO ] mothur "#summary.seqs(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.align,processors=16,count=fileList.paired.trim.contigs.good.count_table)"
+[ 2016-07-26 09:18:50,646 - INFO ] mothur "#screen.seqs(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.align,count=fileList.paired.trim.contigs.good.count_table,summary=fileList.paired.trim.contigs.good.unique.summary,optimize=start-end,criteria=90)"
+[ 2016-07-26 09:18:53,784 - INFO ] File fileList.paired.trim.contigs.good.good.count_table exists as expected.
+[ 2016-07-26 09:18:53,785 - INFO ] File fileList.paired.trim.contigs.good.unique.good.align exists as expected.
+[ 2016-07-26 09:18:53,785 - INFO ] File fileList.paired.trim.contigs.good.unique.bad.accnos exists as expected.
+[ 2016-07-26 09:18:53,785 - INFO ] File fileList.paired.trim.contigs.good.unique.good.summary exists as expected.
+[ 2016-07-26 09:18:53,785 - INFO ] mothur "#filter.seqs(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.good.align,vertical=T,trump=.)"
+[ 2016-07-26 09:19:02,716 - INFO ] mothur "#unique.seqs(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.good.filter.fasta,count=fileList.paired.trim.contigs.good.good.count_table)"
+[ 2016-07-26 09:19:03,070 - INFO ] mothur "#pre.cluster(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.good.filter.unique.fasta,count=fileList.paired.trim.contigs.good.unique.good.filter.count_table,diffs=2)"
+[ 2016-07-26 09:19:04,587 - INFO ] File fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.count_table exists as expected.
+[ 2016-07-26 09:19:04,587 - INFO ] File fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.fasta exists as expected.
+[ 2016-07-26 09:19:04,587 - INFO ] mothur "#chimera.uchime(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.fasta,count=fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.count_table,dereplicate=t)"
+[ 2016-07-26 09:19:26,519 - INFO ] mothur "#remove.seqs(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.fasta,accnos=fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.accnos)"
+[ 2016-07-26 09:19:26,601 - INFO ] File fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta exists as expected.
+[ 2016-07-26 09:19:26,601 - INFO ] mothur "#classify.seqs(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta,count=fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table,reference=/home/ubuntu/ref_dbs/silva/SILVA_SEED.v123.fasta,taxonomy=/home/ubuntu/ref_dbs/silva/silva.seed_v123.tax,cutoff=80,probs=f)"
+[ 2016-07-26 09:22:53,420 - INFO ] mothur "#remove.lineage(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta,count=fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table,taxonomy=fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.seed_v123.wang.taxonomy,taxon=Chloroplast-Mitochondria-unknown-Archaea-Eukaryota)"
+[ 2016-07-26 09:22:53,508 - INFO ] File fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta exists as expected.
+[ 2016-07-26 09:22:53,508 - INFO ] File fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.seed_v123.wang.pick.taxonomy exists as expected.
+[ 2016-07-26 09:22:53,508 - INFO ] File fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.count_table exists as expected.
+[ 2016-07-26 09:22:53,508 - INFO ] mothur "#split.abund(seed=clear,fasta=fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta,count=fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.count_table,cutoff=1,accnos=true)"
+[ 2016-07-26 09:22:53,594 - INFO ] File fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.rare.fasta exists as expected.
+[ 2016-07-26 09:22:53,595 - INFO ] File fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.abund.fasta exists as expected.
+[ 2016-07-26 09:22:53,595 - INFO ] File rare.accnos exists as expected.
+[ 2016-07-26 09:22:53,595 - INFO ] File fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.rare.count_table exists as expected.
+[ 2016-07-26 09:22:53,595 - INFO ] File abund.accnos exists as expected.
+[ 2016-07-26 09:22:53,595 - INFO ] File fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.abund.count_table exists as expected.
+[ 2016-07-26 09:22:53,595 - INFO ] mothur "#remove.seqs(seed=clear,taxonomy=fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.seed_v123.wang.pick.taxonomy,accnos=rare.accnos)"
+[ 2016-07-26 09:22:53,604 - INFO ] File fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.seed_v123.wang.pick.pick.taxonomy exists as expected.
+[ 2016-07-26 09:22:53,632 - INFO ] mothur "#cluster.split(seed=clear,fasta=final.fasta,count=final.count_table,taxonomy=final.taxonomy,splitmethod=classify,taxlevel=4,processors=16)"
+[ 2016-07-26 09:22:56,004 - INFO ] File final.an.unique_list.list exists as expected.
+[ 2016-07-26 09:22:56,004 - INFO ] mothur "#make.shared(seed=clear,list=final.an.unique_list.list,count=final.count_table,label=0.03)"
+[ 2016-07-26 09:22:56,046 - INFO ] File final.an.unique_list.shared exists as expected.
+[ 2016-07-26 09:22:56,058 - INFO ] File design_file exists as expected.
+[ 2016-07-26 09:22:56,058 - INFO ] mothur "#metastats(seed=clear,shared=final.otu.shared,design=design_file)"
+[ 2016-07-26 09:22:57,802 - INFO ] mothur "#classify.otu(seed=clear,list=final.an.unique_list.list,count=final.count_table,taxonomy=final.taxonomy,label=0.03,reftaxonomy=/home/ubuntu/ref_dbs/silva/silva.seed_v123.tax)"
+[ 2016-07-26 09:22:58,307 - INFO ] mothur "#tree.shared(seed=clear,shared=final.otu.shared,calc=thetayc-jclass)"
+[ 2016-07-26 09:22:58,314 - INFO ] File final.otu.jclass.0.03.tre exists as expected.
+[ 2016-07-26 09:22:58,314 - INFO ] File final.otu.thetayc.0.03.tre exists as expected.
+[ 2016-07-26 09:22:58,315 - INFO ] mothur "#summary.single(seed=clear,shared=final.otu.shared)"
+[ 2016-07-26 09:22:58,332 - INFO ] File final.otu.groups.summary exists as expected.
+[ 2016-07-26 09:22:58,333 - INFO ] mothur "#make.lefse(seed=clear,shared=final.otu.shared,design=design_file,constaxonomy=final.an.unique_list.0.03.cons.taxonomy)"
+[ 2016-07-26 09:22:58,344 - INFO ] mothur "#make.biom(seed=clear,shared=final.otu.shared,constaxonomy=final.an.unique_list.0.03.cons.taxonomy,label=0.03,reftaxonomy=/home/ubuntu/ref_dbs/silva/silva.nr_v123.tax)"
+[ 2016-07-26 09:22:58,553 - INFO ] File final.otu.0.03.biom exists as expected.
+[ 2016-07-26 09:22:58,554 - INFO ] mothur "#phylotype(seed=clear,taxonomy=final.taxonomy)"
+[ 2016-07-26 09:22:58,595 - INFO ] File final.tx.sabund exists as expected.
+[ 2016-07-26 09:22:58,595 - INFO ] File final.tx.rabund exists as expected.
+[ 2016-07-26 09:22:58,595 - INFO ] File final.tx.list exists as expected.
+[ 2016-07-26 09:22:58,595 - INFO ] mothur "#make.shared(seed=clear,list=final.tx.list,count=final.count_table,label=1)"
+[ 2016-07-26 09:22:58,619 - INFO ] File final.tx.shared exists as expected.
+[ 2016-07-26 09:22:58,632 - INFO ] mothur "#classify.otu(seed=clear,list=final.tx.list,count=final.count_table,taxonomy=final.taxonomy,label=1)"
+[ 2016-07-26 09:22:59,071 - INFO ] File final.tx.1.cons.taxonomy exists as expected.
+[ 2016-07-26 09:22:59,071 - INFO ] File final.tx.1.cons.tax.summary exists as expected.
+[ 2016-07-26 09:22:59,071 - INFO ] mothur "#tree.shared(seed=clear,shared=final.phylotype.shared,calc=thetayc-jclass)"
+[ 2016-07-26 09:22:59,077 - INFO ] mothur "#dist.seqs(seed=clear,fasta=final.fasta,output=phylip,processors=16)"
+[ 2016-07-26 09:22:59,648 - INFO ] File final.phylip.dist exists as expected.
+[ 2016-07-26 09:22:59,648 - INFO ] mothur "#clearcut(seed=clear,phylip=final.phylip.dist)"
+[ 2016-07-26 09:23:00,355 - INFO ] File final.phylip.tre exists as expected.
+[ 2016-07-26 09:23:00,355 - INFO ] mothur "#unifrac.unweighted(seed=clear,tree=final.phylip.tre,count=final.count_table,distance=lt,processors=16,random=F)"
+[ 2016-07-26 09:23:00,404 - INFO ] File final.phylip.uwsummary exists as expected.
+[ 2016-07-26 09:23:00,405 - INFO ] File final.phylip.tre1.unweighted.phylip.dist exists as expected.
+[ 2016-07-26 09:23:00,405 - INFO ] mothur "#unifrac.weighted(seed=clear,tree=final.phylip.tre,count=final.count_table,distance=lt,processors=16,random=F)"
+[ 2016-07-26 09:23:00,527 - INFO ] File final.phylip.trewsummary exists as expected.
+[ 2016-07-26 09:23:00,527 - INFO ] File final.phylip.tre1.weighted.phylip.dist exists as expected.
+[ 2016-07-26 09:23:00,527 - INFO ] mothur "#pcoa(seed=clear,phylip=final.phylip.tre1.unweighted.phylip.dist)"
+[ 2016-07-26 09:23:00,531 - INFO ] mothur "#pcoa(seed=clear,phylip=final.phylip.tre1.weighted.phylip.dist)"
+[ 2016-07-26 09:23:00,536 - INFO ] mothur "#get.oturep(seed=clear,count=final.count_table,fasta=final.fasta,list=final.an.unique_list.list,method=abundance,label=0.03)"
+[ 2016-07-26 09:23:00,589 - INFO ] biom summarize-table  -i final.otu.0.03.biom -o otu_table.biom.summary.txt
+[ 2016-07-26 09:23:00,903 - INFO ] sort_otu_table.py  --input_otu_table=final.otu.0.03.biom --output_fp=final.otu.0.03.sorted.biom --mapping_fp=MiSeq_paired-end_cell2015_subset.csv --sort_field=TreatmentGroup
+[ 2016-07-26 09:23:01,703 - INFO ] core_diversity_analyses.py  --output_dir=core_diversity --input_biom_fp=final.otu.0.03.sorted.biom --mapping_fp=MiSeq_paired-end_cell2015_subset.csv --nonphylogenetic_diversity --categories=TreatmentGroup --sampling_depth=810
+[ 2016-07-26 09:23:45,542 - INFO ] make_otu_heatmap.py  -i final.otu.0.03.sorted.biom --imagetype=svg -o heatmap.svg

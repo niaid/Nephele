@@ -1,0 +1,275 @@
+Fri Dec  4 16:35:55 EST 2015
+initiation
+running pipeline
+
+Fri Dec  4 16:35:56 EST 2015 WGS pipeline started
+
+Fri Dec  4 16:35:56 EST 2015 WGS pipeline configuration
+AMI_ID,ami-913642f4
+LOG_FILE,logfile.txt
+MAP_TYPE,
+ZIP_FILE,wgs_test.zip
+
+KeyError: 'READS_ZIP'
+WorkFolder.zip created
+Fri Dec  4 21:35:59 UTC 2015
+WorkFolder.zip created
+Thu Jun 16 08:04:38 EDT 2016
+initiation
+running pipeline
+Starting WGS
+
+Thu Jun 16 08:04:38 EDT 2016 WGS pipeline started
+
+Thu Jun 16 08:04:38 EDT 2016 env.json=
+{
+  "jobId": "NPQC0I0OFVH8",
+  "submitTime": "Thu, 16 Jun 2016 12:01:51 +0000",
+  "Bucket": "nephele-pipelines-qa",
+  "ImageId": "ami-e2b7fb88",
+  "UserDescription": "test",
+  "InstanceType": "c3.8xlarge",
+  "Pipeline": "BioBakery SFF or FASTQ Single End or Paired End"
+}
+Thu Jun 16 08:04:38 EDT 2016 WGS pipeline configuration
+ACKNOWLEDGE_BOX,true
+AMI_ID,ami-e2b7fb88
+INPUT_TYPE,BioBakery_WGS
+InstanceType,c3.8xlarge
+LOG_FILE,logfile.txt
+MAP_FILE,map.txt
+READS_ZIP,wgs_reads.zip
+UserDescription,test
+ZIP_FILE,
+pipelineName,BioBakery SFF or FASTQ Single End or Paired End
+
+
+Thu Jun 16 08:04:46 EDT 2016 reads unarchived
+
+Thu Jun 16 08:04:46 EDT 2016 anadama pipeline anadama_workflows.pipelines:WGSPipeline -f raw_seq_files: glob:*.fastq -o decontaminate.threads: 32 -o metaphlan2.nproc: 8  -A anadama_workflows.pipelines:VisualizationPipeline -f sample_metadata: map.txt
+WARNING:root:Directory `/var/www/vfs/anadama_products/SRS014901_knead' doesn't exist. Creating.
+WARNING:root:Directory `/var/www/vfs/anadama_products/SRS014475_knead' doesn't exist. Creating.
+WARNING:root:Directory `/var/www/vfs/anadama_products/SRS053437_knead' doesn't exist. Creating.
+WARNING:root:Directory `/var/www/vfs/anadama_products/SRS012663_knead' doesn't exist. Creating.
+merge_otu_tables.py -i /var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2.biom,/var/www/vfs/anadama_products/SRS014475.fastq.metaphlan2.biom,/var/www/vfs/anadama_products/SRS053437.fastq.metaphlan2.biom,/var/www/vfs/anadama_products/SRS012663.fastq.metaphlan2.biom -o /var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged.biom
+biom convert -i /var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom -o /var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom.tsv  -b --header-key taxonomy --output-metadata-id "Consensus Lineage" --table-type 'otu table'
+scriptPcoa.py --outputFile=/var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom.pcl_pcoa_plot.png --CoordinatesMatrix=/var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom.pcl_pcoa_coords.txt --noShape --meta=color --id=sample /var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom.pcl 
+.  knead_data:/var/www/vfs/anadama_products/SRS014901 Estimated mem=3973 time=60, threads=32
+.  knead_data:/var/www/vfs/anadama_products/SRS014475 Estimated mem=3973 time=60, threads=32
+.  knead_data:/var/www/vfs/anadama_products/SRS053437 Estimated mem=3973 time=60, threads=32
+.  knead_data:/var/www/vfs/anadama_products/SRS012663 Estimated mem=3973 time=60, threads=32
+.  metaphlan2:/var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2.tsv Estimated mem=1536 time=15, threads=8
+.  humann2:/var/www/vfs/anadama_products/SRS014901_humann Estimated mem=8378 time=220, threads=31
+.  metaphlan2:/var/www/vfs/anadama_products/SRS014475.fastq.metaphlan2.tsv Estimated mem=1536 time=15, threads=8
+.  humann2:/var/www/vfs/anadama_products/SRS014475_humann Estimated mem=6821 time=216, threads=31
+.  metaphlan2:/var/www/vfs/anadama_products/SRS053437.fastq.metaphlan2.tsv Estimated mem=1536 time=15, threads=8
+.  humann2:/var/www/vfs/anadama_products/SRS053437_humann Estimated mem=4003 time=213, threads=31
+.  metaphlan2:/var/www/vfs/anadama_products/SRS012663.fastq.metaphlan2.tsv Estimated mem=1536 time=15, threads=8
+.  humann2:/var/www/vfs/anadama_products/SRS012663_humann Estimated mem=6153 time=215, threads=31
+.  merge_otu_tables: /var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged.biom
+.  biom_add_metadata: /var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged.biom
+.  stacked_bar_chart: /var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts
+.  biom_to_tsv: /var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom.tsv
+.  qiime_to_maaslin: /var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom.tsv
+.  merge_otu_metadata: /var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_maaslin.tsv
+.  breadcrumbs_pcoa_plot: /var/www/vfs/anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom.pcl_pcoa_plot.png
+Thu Jun 16 09:31:49 EDT 2016
+updating: config.csv (deflated 34%)
+updating: config.csv.bak (deflated 34%)
+updating: exit_script.sh (deflated 56%)
+updating: logfile.txt (deflated 73%)
+updating: mapcheck.sh (deflated 41%)
+updating: run (deflated 55%)
+updating: wgsp.py (deflated 60%)
+updating: wgsp.sh (deflated 35%)
+updating: PipelineResults.zip (stored 0%)
+updating: Pipeline_done.txt (stored 0%)
+updating: SelectedFiles/ (stored 0%)
+updating: SelectedFiles/logfile.txt (deflated 40%)
+  adding: SRS012663.fastq (deflated 68%)
+  adding: SRS014475.fastq (deflated 70%)
+  adding: SRS014901.fastq (deflated 71%)
+  adding: SRS053437.fastq (deflated 81%)
+  adding: anadama_products/ (stored 0%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom.pcl_pcoa_coords.txt (deflated 38%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_maaslin.tsv (deflated 81%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged.biom (deflated 82%)
+  adding: anadama_products/SRS014475.fastq.metaphlan2.tsv.bowtie2out.txt (deflated 79%)
+  adding: anadama_products/SRS053437_humann/ (stored 0%)
+  adding: anadama_products/SRS053437_humann/SRS053437_pathabundance.tsv (deflated 84%)
+  adding: anadama_products/SRS053437_humann/humann2_log.txt (deflated 88%)
+  adding: anadama_products/SRS053437_humann/SRS053437_genefamilies.tsv (deflated 80%)
+  adding: anadama_products/SRS053437_humann/SRS053437_pathcoverage.tsv (deflated 91%)
+  adding: anadama_products/SRS053437.fastq.metaphlan2.tsv.bowtie2out.txt (deflated 82%)
+  adding: anadama_products/SRS014901_humann/ (stored 0%)
+  adding: anadama_products/SRS014901_humann/SRS014901_pathcoverage.tsv (deflated 91%)
+  adding: anadama_products/SRS014901_humann/SRS014901_genefamilies.tsv (deflated 80%)
+  adding: anadama_products/SRS014901_humann/SRS014901_pathabundance.tsv (deflated 84%)
+  adding: anadama_products/SRS014901_humann/humann2_log.txt (deflated 89%)
+  adding: anadama_products/SRS012663.fastq.metaphlan2.biom (deflated 74%)
+  adding: anadama_products/SRS053437.fastq.metaphlan2.biom (deflated 74%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom.pcl_pcoa_plot-sample.png (deflated 20%)
+  adding: anadama_products/SRS014901_knead/ (stored 0%)
+  adding: anadama_products/SRS014901_knead/SRS014901.fastq (deflated 71%)
+  adding: anadama_products/SRS014901_knead/SRS014901_humanGRCh38_contam.fastq (deflated 74%)
+  adding: anadama_products/SRS014901_knead/SRS014901.log (stored 0%)
+  adding: anadama_products/SRS014475.fastq.metaphlan2.biom (deflated 82%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/ (stored 0%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/SRS014901.fastq.metaphlan2_merged_meta_L6.txt (deflated 75%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/SRS014901.fastq.metaphlan2_merged_meta_L5.biom (deflated 72%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/SRS014901.fastq.metaphlan2_merged_meta_L5.txt (deflated 71%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/SRS014901.fastq.metaphlan2_merged_meta_L6.biom (deflated 75%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/SRS014901.fastq.metaphlan2_merged_meta_L4.txt (deflated 65%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/SRS014901.fastq.metaphlan2_merged_meta_L3.biom (deflated 65%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/SRS014901.fastq.metaphlan2_merged_meta_L2.biom (deflated 57%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/SRS014901.fastq.metaphlan2_merged_meta_L3.txt (deflated 61%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/ (stored 0%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/css/ (stored 0%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/css/qiime_style.css (deflated 89%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/js/ (stored 0%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/js/overlib.js (deflated 72%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/raw_data/ (stored 0%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/raw_data/SRS014901.fastq.metaphlan2_merged_meta_L6.txt (deflated 75%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/raw_data/SRS014901.fastq.metaphlan2_merged_meta_L5.txt (deflated 71%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/raw_data/SRS014901.fastq.metaphlan2_merged_meta_L4.txt (deflated 65%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/raw_data/SRS014901.fastq.metaphlan2_merged_meta_L3.txt (deflated 61%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/raw_data/SRS014901.fastq.metaphlan2_merged_meta_L2.txt (deflated 47%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/area_charts.html (deflated 92%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/ (stored 0%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/5jGPZZDTzwdZGxUJbIhLqX0x8dXaD6.pdf (deflated 30%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/PK1aD8gu0AJDc7hybc9m9aj5IwBt9f.pdf (deflated 33%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/fLOCtxCTAzzOZzqb0TQExHc6KYbZHb.png (deflated 3%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/3tus0NWsi8CN5x0ZBeTn0EhtDLZqn7_legend.pdf (deflated 32%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/KjazXPPS0pRkr9fQ3Y53hZE7TKiFy1_legend.pdf (deflated 35%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/3tus0NWsi8CN5x0ZBeTn0EhtDLZqn7.png (deflated 38%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/Dq4oRfew1O2iKbszzsPRFrs3xm5pNh.png (deflated 4%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/LRQ6b02l7HLJwg2m6lC37qKKUDMT2f.png (deflated 40%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/fLOCtxCTAzzOZzqb0TQExHc6KYbZHb_legend.pdf (deflated 32%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/g6wOK9qacGCPbM2Zy3qLBHD4GBOS0K_legend.pdf (deflated 35%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/gN1D1UFE9f0AEslpKDaJbNxz7aJsWU.png (deflated 5%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/AbOnzju4bK3B60TJxrOGRjPn4eTK4Q.pdf (deflated 33%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/dyGfty09EZ2ZhlcTUBJWNjq5R6jWAc.pdf (deflated 27%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/KjazXPPS0pRkr9fQ3Y53hZE7TKiFy1.png (deflated 42%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/ksLCkxsKOkcsmoZzZQtzMR0FHZKkX4.png (deflated 40%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/zEtjFGWqK8G1fQCf5J2quqHp0RNFzz.png (deflated 3%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/Iyam73JCzua7wZbXlK5R4w7ItucK5e_legend.pdf (deflated 33%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/g6wOK9qacGCPbM2Zy3qLBHD4GBOS0K.png (deflated 7%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/gN1D1UFE9f0AEslpKDaJbNxz7aJsWU_legend.pdf (deflated 34%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/ksLCkxsKOkcsmoZzZQtzMR0FHZKkX4_legend.pdf (deflated 34%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/Dq4oRfew1O2iKbszzsPRFrs3xm5pNh_legend.pdf (deflated 33%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/LRQ6b02l7HLJwg2m6lC37qKKUDMT2f_legend.pdf (deflated 33%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/Iyam73JCzua7wZbXlK5R4w7ItucK5e.png (deflated 38%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/MQPFDjMaYx1ZnWbb4df2xwu887zZoE.pdf (deflated 30%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/J5jb70kXbgCy2FNOa0RBzetZ4lU0Xz.pdf (deflated 32%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/EYOdlBp1cBXaEdSCjE8jXajBDTz9NG.pdf (deflated 31%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/Zmqq2dAEq6pl10jyxrmz609MpDa9Ip.pdf (deflated 30%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/uOPTHaPBxOz5rRjekhoWREnox5G704.pdf (deflated 32%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/zEtjFGWqK8G1fQCf5J2quqHp0RNFzz_legend.pdf (deflated 33%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/charts/YZnu7Pr0n31pNZhFkZGs5oiuRcJJ0j.pdf (deflated 29%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/taxa_summary_plots/bar_charts.html (deflated 92%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/SRS014901.fastq.metaphlan2_merged_meta_L4.biom (deflated 67%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/log_20160616133130.txt (deflated 72%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom_barcharts/SRS014901.fastq.metaphlan2_merged_meta_L2.txt (deflated 47%)
+  adding: anadama_products/SRS014475.fastq.metaphlan2.tsv (deflated 88%)
+  adding: anadama_products/SRS012663.fastq.metaphlan2.tsv.bowtie2out.txt (deflated 82%)
+  adding: anadama_products/SRS012663.fastq.metaphlan2.tsv (deflated 87%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom.pcl_pcoa_plot-color.png (deflated 19%)
+  adding: anadama_products/SRS053437.fastq.metaphlan2.tsv (deflated 87%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2.tsv (deflated 88%)
+  adding: anadama_products/SRS012663_humann/ (stored 0%)
+  adding: anadama_products/SRS012663_humann/humann2_log.txt (deflated 88%)
+  adding: anadama_products/SRS012663_humann/SRS012663_genefamilies.tsv (deflated 80%)
+  adding: anadama_products/SRS012663_humann/SRS012663_pathcoverage.tsv (deflated 91%)
+  adding: anadama_products/SRS012663_humann/SRS012663_pathabundance.tsv (deflated 84%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom.pcl (deflated 81%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2.tsv.bowtie2out.txt (deflated 81%)
+  adding: anadama_products/map.txt (deflated 28%)
+  adding: anadama_products/SRS053437_knead/ (stored 0%)
+  adding: anadama_products/SRS053437_knead/SRS053437.fastq (deflated 69%)
+  adding: anadama_products/SRS053437_knead/SRS053437.log (stored 0%)
+  adding: anadama_products/SRS053437_knead/SRS053437_humanGRCh38_contam.fastq (deflated 73%)
+  adding: anadama_products/SRS014475_humann/ (stored 0%)
+  adding: anadama_products/SRS014475_humann/SRS014475_genefamilies.tsv (deflated 80%)
+  adding: anadama_products/SRS014475_humann/SRS014475_pathabundance.tsv (deflated 84%)
+  adding: anadama_products/SRS014475_humann/humann2_log.txt (deflated 91%)
+  adding: anadama_products/SRS014475_humann/SRS014475_pathcoverage.tsv (deflated 91%)
+  adding: anadama_products/SRS012663_knead/ (stored 0%)
+  adding: anadama_products/SRS012663_knead/SRS012663.log (stored 0%)
+  adding: anadama_products/SRS012663_knead/SRS012663.fastq (deflated 68%)
+  adding: anadama_products/SRS012663_knead/SRS012663_humanGRCh38_contam.fastq (deflated 72%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2.biom (deflated 77%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom.tsv (deflated 79%)
+  adding: anadama_products/SRS014475_knead/ (stored 0%)
+  adding: anadama_products/SRS014475_knead/SRS014475.fastq (deflated 70%)
+  adding: anadama_products/SRS014475_knead/SRS014475.log (stored 0%)
+  adding: anadama_products/SRS014475_knead/SRS014475_humanGRCh38_contam.fastq (deflated 74%)
+  adding: anadama_products/SRS014901.fastq.metaphlan2_merged_meta.biom (deflated 82%)
+  adding: env.json (deflated 27%)
+  adding: map.txt (deflated 27%)
+  adding: mapcheck.sh.1 (deflated 41%)
+  adding: neph_pipes_utils.py (deflated 79%)
+  adding: run.sh (deflated 53%)
+  adding: wgsp_exe.sh (deflated 34%)
+WorkFolder.zip created
+mkdir: cannot create directory 'SelectedFiles': File exists
+  adding: SRS012663_genefamilies.tsv (deflated 80%)
+  adding: SRS012663_pathabundance.tsv (deflated 84%)
+  adding: SRS012663_pathcoverage.tsv (deflated 91%)
+  adding: SRS014475_genefamilies.tsv (deflated 80%)
+  adding: SRS014475_pathabundance.tsv (deflated 84%)
+  adding: SRS014475_pathcoverage.tsv (deflated 91%)
+  adding: SRS014901.fastq.metaphlan2_merged_meta.biom (deflated 82%)
+  adding: SRS014901.fastq.metaphlan2_merged_meta.biom.pcl_pcoa_plot-color.png (deflated 19%)
+  adding: SRS014901.fastq.metaphlan2_merged_meta.biom.pcl_pcoa_plot-sample.png (deflated 20%)
+  adding: SRS014901.fastq.metaphlan2_merged_meta.biom_maaslin.tsv (deflated 81%)
+  adding: SRS014901_genefamilies.tsv (deflated 80%)
+  adding: SRS014901_pathabundance.tsv (deflated 84%)
+  adding: SRS014901_pathcoverage.tsv (deflated 91%)
+  adding: SRS053437_genefamilies.tsv (deflated 80%)
+  adding: SRS053437_pathabundance.tsv (deflated 84%)
+  adding: SRS053437_pathcoverage.tsv (deflated 91%)
+  adding: logfile.txt (deflated 84%)
+  adding: taxa_summary_plots/ (stored 0%)
+  adding: taxa_summary_plots/css/ (stored 0%)
+  adding: taxa_summary_plots/css/qiime_style.css (deflated 89%)
+  adding: taxa_summary_plots/js/ (stored 0%)
+  adding: taxa_summary_plots/js/overlib.js (deflated 72%)
+  adding: taxa_summary_plots/raw_data/ (stored 0%)
+  adding: taxa_summary_plots/raw_data/SRS014901.fastq.metaphlan2_merged_meta_L6.txt (deflated 75%)
+  adding: taxa_summary_plots/raw_data/SRS014901.fastq.metaphlan2_merged_meta_L5.txt (deflated 71%)
+  adding: taxa_summary_plots/raw_data/SRS014901.fastq.metaphlan2_merged_meta_L4.txt (deflated 65%)
+  adding: taxa_summary_plots/raw_data/SRS014901.fastq.metaphlan2_merged_meta_L3.txt (deflated 61%)
+  adding: taxa_summary_plots/raw_data/SRS014901.fastq.metaphlan2_merged_meta_L2.txt (deflated 47%)
+  adding: taxa_summary_plots/area_charts.html (deflated 92%)
+  adding: taxa_summary_plots/charts/ (stored 0%)
+  adding: taxa_summary_plots/charts/5jGPZZDTzwdZGxUJbIhLqX0x8dXaD6.pdf (deflated 30%)
+  adding: taxa_summary_plots/charts/PK1aD8gu0AJDc7hybc9m9aj5IwBt9f.pdf (deflated 33%)
+  adding: taxa_summary_plots/charts/fLOCtxCTAzzOZzqb0TQExHc6KYbZHb.png (deflated 3%)
+  adding: taxa_summary_plots/charts/3tus0NWsi8CN5x0ZBeTn0EhtDLZqn7_legend.pdf (deflated 32%)
+  adding: taxa_summary_plots/charts/KjazXPPS0pRkr9fQ3Y53hZE7TKiFy1_legend.pdf (deflated 35%)
+  adding: taxa_summary_plots/charts/3tus0NWsi8CN5x0ZBeTn0EhtDLZqn7.png (deflated 38%)
+  adding: taxa_summary_plots/charts/Dq4oRfew1O2iKbszzsPRFrs3xm5pNh.png (deflated 4%)
+  adding: taxa_summary_plots/charts/LRQ6b02l7HLJwg2m6lC37qKKUDMT2f.png (deflated 40%)
+  adding: taxa_summary_plots/charts/fLOCtxCTAzzOZzqb0TQExHc6KYbZHb_legend.pdf (deflated 32%)
+  adding: taxa_summary_plots/charts/g6wOK9qacGCPbM2Zy3qLBHD4GBOS0K_legend.pdf (deflated 35%)
+  adding: taxa_summary_plots/charts/gN1D1UFE9f0AEslpKDaJbNxz7aJsWU.png (deflated 5%)
+  adding: taxa_summary_plots/charts/AbOnzju4bK3B60TJxrOGRjPn4eTK4Q.pdf (deflated 33%)
+  adding: taxa_summary_plots/charts/dyGfty09EZ2ZhlcTUBJWNjq5R6jWAc.pdf (deflated 27%)
+  adding: taxa_summary_plots/charts/KjazXPPS0pRkr9fQ3Y53hZE7TKiFy1.png (deflated 42%)
+  adding: taxa_summary_plots/charts/ksLCkxsKOkcsmoZzZQtzMR0FHZKkX4.png (deflated 40%)
+  adding: taxa_summary_plots/charts/zEtjFGWqK8G1fQCf5J2quqHp0RNFzz.png (deflated 3%)
+  adding: taxa_summary_plots/charts/Iyam73JCzua7wZbXlK5R4w7ItucK5e_legend.pdf (deflated 33%)
+  adding: taxa_summary_plots/charts/g6wOK9qacGCPbM2Zy3qLBHD4GBOS0K.png (deflated 7%)
+  adding: taxa_summary_plots/charts/gN1D1UFE9f0AEslpKDaJbNxz7aJsWU_legend.pdf (deflated 34%)
+  adding: taxa_summary_plots/charts/ksLCkxsKOkcsmoZzZQtzMR0FHZKkX4_legend.pdf (deflated 34%)
+  adding: taxa_summary_plots/charts/Dq4oRfew1O2iKbszzsPRFrs3xm5pNh_legend.pdf (deflated 33%)
+  adding: taxa_summary_plots/charts/LRQ6b02l7HLJwg2m6lC37qKKUDMT2f_legend.pdf (deflated 33%)
+  adding: taxa_summary_plots/charts/Iyam73JCzua7wZbXlK5R4w7ItucK5e.png (deflated 38%)
+  adding: taxa_summary_plots/charts/MQPFDjMaYx1ZnWbb4df2xwu887zZoE.pdf (deflated 30%)
+  adding: taxa_summary_plots/charts/J5jb70kXbgCy2FNOa0RBzetZ4lU0Xz.pdf (deflated 32%)
+  adding: taxa_summary_plots/charts/EYOdlBp1cBXaEdSCjE8jXajBDTz9NG.pdf (deflated 31%)
+  adding: taxa_summary_plots/charts/Zmqq2dAEq6pl10jyxrmz609MpDa9Ip.pdf (deflated 30%)
+  adding: taxa_summary_plots/charts/uOPTHaPBxOz5rRjekhoWREnox5G704.pdf (deflated 32%)
+  adding: taxa_summary_plots/charts/zEtjFGWqK8G1fQCf5J2quqHp0RNFzz_legend.pdf (deflated 33%)
+  adding: taxa_summary_plots/charts/YZnu7Pr0n31pNZhFkZGs5oiuRcJJ0j.pdf (deflated 29%)
+  adding: taxa_summary_plots/bar_charts.html (deflated 92%)
