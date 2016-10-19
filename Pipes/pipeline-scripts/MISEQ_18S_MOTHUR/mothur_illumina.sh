@@ -34,6 +34,13 @@ echo
 
 # download silva files
 
+#symlink silva dbs
+ln -s /home/ubuntu/ref_dbs/silva/SILVA_SEED.v123.fasta silva.seed_v123.align
+ln -s /home/ubuntu/ref_dbs/silva/silva.seed_v123.tax silva.seed_v123.tax
+ln -s /home/ubuntu/ref_dbs/silva/silva.nr_v123.align silva.nr_v123.align
+ln -s /home/ubuntu/ref_dbs/silva/silva.nr_v123.tax silva.nr_v123.tax
+
+
 #########################
 # Step 1: Preprocessing #
 #########################
@@ -50,18 +57,18 @@ echo forward$'\t'$FORWARD_PRIMER$'\n'reverse$'\t'$REVERSE_PRIMER > pcr.oligos
 # Trim the reference to the desired region of the 18S gene. Use pcr.oligos
 # (generated from the user-defined primers) to trim.
 #
-# DIFFERENCE: Use the new silva.seed_v119.align fsince it contains archaea
+# DIFFERENCE: Use the new silva.seed_v123.align fsince it contains archaea
 # DIFFERENCE: keepprimer=true since sequences have primers
 #
 # Use seed_119 since it's much smaller (~10x) than nr_119. Later we will trim
 # both datasets.
 #
 # Output File Names:
-#     silva.seed_v119.pcr.align
-#     silva.seed_v119.bad.accnos
-#     silva.seed_v119.scrap.pcr.align
+#     silva.seed_v123.pcr.align
+#     silva.seed_v123.bad.accnos
+#     silva.seed_v123.scrap.pcr.align
 #
-$MOTHUR "#pcr.seqs(fasta=silva.seed_v119.align, oligos=pcr.oligos, processors=$PROCESSORS, keepprimer=true)"
+$MOTHUR "#pcr.seqs(fasta=silva.seed_v123.align, oligos=pcr.oligos, processors=$PROCESSORS, keepprimer=true)"
 
 # Trim the entire alignment to the primer-bracketed region
 #
@@ -70,21 +77,21 @@ $MOTHUR "#pcr.seqs(fasta=silva.seed_v119.align, oligos=pcr.oligos, processors=$P
 #     silva.seed.trimmed.align
 #
 # Find primer locations
-python find_primers.py --trimmed silva.seed_v119.pcr.align --output primer.positions
+python find_primers.py --trimmed silva.seed_v123.pcr.align --output primer.positions
 START=$(cut -f 1 primer.positions)
 END=$(cut -f 2 primer.positions)
 # Check if found and trim if needed
 if [ "$START" = "?" ]; then
     # Primers not found. Use entire reference (will be slower and less accurate)
     # Fake it: just symlink to the un-trimmed references
-    ln -s silva.nr_v119.align silva.trimmed.align
-    ln -s silva.seed_v119.align silva.seed.trimmed.align
+    ln -s silva.nr_v123.align silva.trimmed.align
+    ln -s silva.seed_v123.align silva.seed.trimmed.align
 else
     START=$(expr $START - 1) # I think mothur trims an extra base, so use start - 1
-    $MOTHUR "#pcr.seqs(fasta=silva.nr_v119.align, start=$START, end=$END, keepdots=false,  processors=$PROCESSORS)"
-    mv silva.nr_v119.pcr.align silva.trimmed.align
-    $MOTHUR "#pcr.seqs(fasta=silva.seed_v119.align, start=$START, end=$END, keepdots=false,  processors=$PROCESSORS)"
-    mv silva.seed_v119.pcr.align silva.seed.trimmed.align
+    $MOTHUR "#pcr.seqs(fasta=silva.nr_v123.align, start=$START, end=$END, keepdots=false,  processors=$PROCESSORS)"
+    mv silva.nr_v123.pcr.align silva.trimmed.align
+    $MOTHUR "#pcr.seqs(fasta=silva.seed_v123.align, start=$START, end=$END, keepdots=false,  processors=$PROCESSORS)"
+    mv silva.seed_v123.pcr.align silva.seed.trimmed.align
 fi
 
 # Process reads
@@ -256,10 +263,10 @@ fi
 # only SILVA contains archaeal and eukaryotic sequences.
 #
 # Output File Names:
-#     rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v119.wang.taxonomy
-#     rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v119.wang.tax.summary
+#     rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v123.wang.taxonomy
+#     rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v123.wang.tax.summary
 #
-$MOTHUR "#classify.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table, reference=silva.trimmed.align, taxonomy=silva.nr_v119.tax, cutoff=80, processors=$PROCESSORS)"
+$MOTHUR "#classify.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table, reference=silva.trimmed.align, taxonomy=silva.nr_v123.tax, cutoff=80, processors=$PROCESSORS)"
 
 # Remove undesirable sequences: for instance, we don't want chloroplasts since
 # they are transients derived from food. Users should be able to check which
@@ -272,18 +279,18 @@ $MOTHUR "#classify.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.uniqu
 #                   include custom names.
 #
 # Output File Names:
-#    rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v119.wang.pick.taxonomy
+#    rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v123.wang.pick.taxonomy
 #    rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta
 #    rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.count_table
 #
-$MOTHUR "#remove.lineage(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table, taxonomy=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v119.wang.taxonomy, taxon=$REMOVE_LIST)"
+$MOTHUR "#remove.lineage(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table, taxonomy=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v123.wang.taxonomy, taxon=$REMOVE_LIST)"
 
 run_mothur_command "$COMMAND"
 
 # Move files to friendlier locations
 ln -sf rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta rawfile.final.fasta
 ln -sf rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.count_table rawfile.final.count_table
-ln -sf rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v119.wang.pick.taxonomy rawfile.final.nr_v119.taxonomy
+ln -sf rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v123.wang.pick.taxonomy rawfile.final.nr_v123.taxonomy
 
 ######################
 # Step 3: Clustering #
@@ -300,12 +307,12 @@ if [ "$REMOVE_SINGLETONS" = true ]; then
     #     rawfile.final.abund.fasta
     $MOTHUR "#split.abund(fasta=rawfile.final.fasta, count=rawfile.final.count_table, cutoff=1, accnos=true)"
 
-    $MOTHUR "#remove.seqs(accnos=rare.accnos, taxonomy=rawfile.final.nr_v119.taxonomy)"
+    $MOTHUR "#remove.seqs(accnos=rare.accnos, taxonomy=rawfile.final.nr_v123.taxonomy)"
 
     # Overwrite old links with the new files, which have singletons removed
     ln -sf rawfile.final.abund.count_table rawfile.final.count_table
     ln -sf rawfile.final.abund.fasta rawfile.final.fasta
-    ln -sf rawfile.final.nr_v119.pick.taxonomy rawfile.final.nr_v119.taxonomy
+    ln -sf rawfile.final.nr_v123.pick.taxonomy rawfile.final.nr_v123.taxonomy
 fi
 
 # Calculate distances and cluster
@@ -339,7 +346,7 @@ make.shared(list=rawfile.final.an.unique_list.list, count=rawfile.final.count_ta
 system(cp rawfile.final.an.unique_list.shared rawfile.final.otu.shared)
 
 # Get consensus OTU classifications using existing classifications
-classify.otu(list=rawfile.final.an.unique_list.list, count=rawfile.final.count_table, taxonomy=rawfile.final.nr_v119.taxonomy, label=0.03, reftaxonomy=silva.nr_v119.tax)
+classify.otu(list=rawfile.final.an.unique_list.list, count=rawfile.final.count_table, taxonomy=rawfile.final.nr_v123.taxonomy, label=0.03, reftaxonomy=silva.nr_v123.tax)
 
 # Make trees indicating community similarity
 tree.shared(shared=rawfile.final.otu.shared, calc=thetayc-jclass)
@@ -401,6 +408,14 @@ $MOTHUR "#make.biom(shared=rawfile.final.otu.shared, constaxonomy=rawfile.final.
 # Using the BIOM package (bundled in QIIME), output human-readable description
 # of the BIOM file.
 biom summarize-table -i rawfile.final.otu.0.03.biom -o otu_table.biom.summary.txt
+
+## make better plots
+Rscript betterplots.R rawfile.final.otu.0.03.biom rawfile.mapping Phylum NO
+Rscript betterplots.R rawfile.final.otu.0.03.biom rawfile.mapping Class NO
+Rscript betterplots.R rawfile.final.otu.0.03.biom rawfile.mapping Order NO
+Rscript betterplots.R rawfile.final.otu.0.03.biom rawfile.mapping Family NO
+Rscript betterplots.R rawfile.final.otu.0.03.biom rawfile.mapping Genus NO
+
 
 if [ "$DO_CORE_DIVERSITY" = true ]; then
     # Sort the samples in the OTU table by treatment
@@ -464,16 +479,16 @@ run_mothur_command "$COMMAND"
 #
 COMMAND="
 # Bin sequences into phylotypes so they can be used as OTUs.
-phylotype(taxonomy=rawfile.final.nr_v119.taxonomy)
+phylotype(taxonomy=rawfile.final.nr_v123.taxonomy)
 
 # Make a shared file. The command label=1 means the most specific level
 # available in the taxonomy (e.g. species)
-make.shared(list=rawfile.final.nr_v119.tx.list, count=rawfile.final.count_table, label=1)
+make.shared(list=rawfile.final.nr_v123.tx.list, count=rawfile.final.count_table, label=1)
 
-system(cp rawfile.final.nr_v119.tx.shared rawfile.final.phylotype.shared)
+system(cp rawfile.final.nr_v123.tx.shared rawfile.final.phylotype.shared)
 
 # Label the phylotypes with their consensus taxonomy
-classify.otu(list=rawfile.final.nr_v119.tx.list, count=rawfile.final.count_table, taxonomy=rawfile.final.nr_v119.taxonomy, label=$PHYLOTYPE_LEVEL)
+classify.otu(list=rawfile.final.nr_v123.tx.list, count=rawfile.final.count_table, taxonomy=rawfile.final.nr_v123.taxonomy, label=$PHYLOTYPE_LEVEL)
 
 # Make a tree of sample similarities using phylotype abundance
 tree.shared(shared=rawfile.final.phylotype.shared, calc=thetayc-jclass)

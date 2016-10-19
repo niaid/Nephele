@@ -4,10 +4,9 @@ rm -rf ./calculate_subsample.pl
 rm -rf ./miseq_18S.py
 rm -rf ./mothur
 rm -rf ./uchime
-rm -rf silva.nr_v119.align
+rm -rf silva.nr_v123.align
 rm -rf silva.trimmed.align
-rm -rf silva.seed_v119.align
-rm -rf ./arguments.json
+rm -rf silva.seed_v123.align
 rm -rf silva.trimmed.8mer
 
 
@@ -41,6 +40,7 @@ cp *lefse* SelectedFiles/
 cp *0.03.rep.fasta SelectedFiles/
 cp config.csv SelectedFiles/
 cp rawfile.trim.contigs.good.unique.fasta SelectedFiles/
+cp -r taxa_plots_and_heatmaps SelectedFiles/
 
 # logfile
 if [ -f logfile.txt ];

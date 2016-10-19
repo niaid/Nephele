@@ -35,6 +35,13 @@ echo
 # download silva files
 
 
+#symlink silva dbs
+ln -s /home/ubuntu/ref_dbs/silva/SILVA_SEED.v123.fasta silva.seed_v123.align
+ln -s /home/ubuntu/ref_dbs/silva/silva.seed_v123.tax silva.seed_v123.tax
+ln -s /home/ubuntu/ref_dbs/silva/silva.nr_v123.align silva.nr_v123.align
+ln -s /home/ubuntu/ref_dbs/silva/silva.nr_v123.tax silva.nr_v123.tax
+
+
 #########################
 # Step 1: Preprocessing #
 #########################
@@ -54,18 +61,18 @@ echo forward$'\t'$FORWARD_PRIMER$'\n'reverse$'\t'$REVERSE_PRIMER > pcr.oligos
 # Trim the reference to the desired region of the 18S gene. Use pcr.oligos
 # (generated from the user-defined primers) to trim.
 #
-# DIFFERENCE: Use the new silva.seed_v119.align fsince it contains archaea
+# DIFFERENCE: Use the new silva.seed_v123.align fsince it contains archaea
 # DIFFERENCE: keepprimer=true since sequences have primers
 #
 # Use seed_119 since it's much smaller (~10x) than nr_119. Later we will trim
 # both datasets.
 #
 # Output File Names:
-#     silva.seed_v119.pcr.align
-#     silva.seed_v119.bad.accnos
-#     silva.seed_v119.scrap.pcr.align
+#     silva.seed_v123.pcr.align
+#     silva.seed_v123.bad.accnos
+#     silva.seed_v123.scrap.pcr.align
 #
-$MOTHUR "#pcr.seqs(fasta=silva.seed_v119.align, oligos=pcr.oligos, processors=$PROCESSORS, keepprimer=true)"
+$MOTHUR "#pcr.seqs(fasta=silva.seed_v123.align, oligos=pcr.oligos, processors=$PROCESSORS, keepprimer=true)"
 
 # Trim the entire alignment to the primer-bracketed region
 #
@@ -74,21 +81,21 @@ $MOTHUR "#pcr.seqs(fasta=silva.seed_v119.align, oligos=pcr.oligos, processors=$P
 #     silva.seed.trimmed.align
 #
 # Find primer locations
-python find_primers.py --trimmed silva.seed_v119.pcr.align --output primer.positions
+python find_primers.py --trimmed silva.seed_v123.pcr.align --output primer.positions
 START=$(cut -f 1 primer.positions)
 END=$(cut -f 2 primer.positions)
 # Check if found and trim if needed
 if [ "$START" = "?" ]; then
     # Primers not found. Use entire reference (will be slower and less accurate)
     # Fake it: just symlink to the un-trimmed references
-    ln -s silva.nr_v119.align silva.trimmed.align
-    ln -s silva.seed_v119.align silva.seed.trimmed.align
+    ln -s silva.nr_v123.align silva.trimmed.align
+    ln -s silva.seed_v123.align silva.seed.trimmed.align
 else
     START=$(expr $START - 1) # I think mothur trims an extra base, so use start - 1
-    $MOTHUR "#pcr.seqs(fasta=silva.nr_v119.align, start=$START, end=$END, keepdots=false,  processors=$PROCESSORS)"
-    mv silva.nr_v119.pcr.align silva.trimmed.align
-    $MOTHUR "#pcr.seqs(fasta=silva.seed_v119.align, start=$START, end=$END, keepdots=false,  processors=$PROCESSORS)"
-    mv silva.seed_v119.pcr.align silva.seed.trimmed.align
+    $MOTHUR "#pcr.seqs(fasta=silva.nr_v123.align, start=$START, end=$END, keepdots=false,  processors=$PROCESSORS)"
+    mv silva.nr_v123.pcr.align silva.trimmed.align
+    $MOTHUR "#pcr.seqs(fasta=silva.seed_v123.align, start=$START, end=$END, keepdots=false,  processors=$PROCESSORS)"
+    mv silva.seed_v123.pcr.align silva.seed.trimmed.align
 fi
 
 # Process reads
@@ -296,10 +303,10 @@ if [ "$OTU_MODE" = "masked" ]; then
     #                           is 80.
     #
     # Output File Names:
-    #     masked.nr_v119.wang.taxonomy
-    #     masked.nr_v119.wang.tax.summary
+    #     masked.nr_v123.wang.taxonomy
+    #     masked.nr_v123.wang.tax.summary
     #
-    $MOTHUR "#classify.seqs(fasta=masked.fasta, group=masked.groups, reference=silva.trimmed.align, taxonomy=silva.nr_v119.tax, cutoff=$CLASSIFY_CONFIDENCE, processors=$PROCESSORS)"
+    $MOTHUR "#classify.seqs(fasta=masked.fasta, group=masked.groups, reference=silva.trimmed.align, taxonomy=silva.nr_v123.tax, cutoff=$CLASSIFY_CONFIDENCE, processors=$PROCESSORS)"
 
     # Remove undesirable sequences: for instance, we don't want chloroplasts since
     # they are derived from food. Users should be able to check which groups they
@@ -312,14 +319,14 @@ if [ "$OTU_MODE" = "masked" ]; then
     #                   include custom names.
     #
     # Output File Names:
-    #    masked.nr_v119.wang.pick.taxonomy
+    #    masked.nr_v123.wang.pick.taxonomy
     #    masked.pick.names
     #    masked.pick.fasta
     #    masked.pick.groups
-    $MOTHUR "#remove.lineage(taxonomy=masked.nr_v119.wang.taxonomy, name=masked.names, group=masked.groups, fasta=masked.fasta, taxon=$REMOVE_LIST)"
+    $MOTHUR "#remove.lineage(taxonomy=masked.nr_v123.wang.taxonomy, name=masked.names, group=masked.groups, fasta=masked.fasta, taxon=$REMOVE_LIST)"
 
     # Link files
-    ln -s masked.nr_v119.wang.pick.taxonomy final.taxonomy
+    ln -s masked.nr_v123.wang.pick.taxonomy final.taxonomy
     ln -s masked.pick.names final.taxonomy.names # Same file, but pipeline uses a copy b/c taxonomy might not correspond
     ln -s masked.pick.fasta final.fasta
     ln -s masked.pick.groups final.groups
@@ -362,10 +369,10 @@ else
     #                           is 80.
     #
     # Output File Names:
-    #     concat.pick.unique.nr_v119.wang.taxonomy
-    #     concat.pick.unique.nr_v119.wang.tax.summary
+    #     concat.pick.unique.nr_v123.wang.taxonomy
+    #     concat.pick.unique.nr_v123.wang.tax.summary
     #
-    $MOTHUR "#classify.seqs(fasta=concat.pick.unique.fasta, group=$OTU_INPUT.groups, reference=silva.trimmed.align, taxonomy=silva.nr_v119.tax, cutoff=$CLASSIFY_CONFIDENCE, processors=$PROCESSORS)"
+    $MOTHUR "#classify.seqs(fasta=concat.pick.unique.fasta, group=$OTU_INPUT.groups, reference=silva.trimmed.align, taxonomy=silva.nr_v123.tax, cutoff=$CLASSIFY_CONFIDENCE, processors=$PROCESSORS)"
 
     # Remove undesirable sequences: for instance, we don't want chloroplasts since
     # they are derived from food. Users should be able to check which groups they
@@ -378,13 +385,13 @@ else
     #                   include custom names.
     #
     # Output File Names:
-    #    concat.pick.unique.nr_v119.wang.pick.taxonomy
+    #    concat.pick.unique.nr_v123.wang.pick.taxonomy
     #    concat.pick.pick.names
     #
-    $MOTHUR "#remove.lineage(taxonomy=concat.pick.unique.nr_v119.wang.taxonomy, name=concat.pick.names, taxon=$REMOVE_LIST)"
+    $MOTHUR "#remove.lineage(taxonomy=concat.pick.unique.nr_v123.wang.taxonomy, name=concat.pick.names, taxon=$REMOVE_LIST)"
 
     # Move file to friendlier location
-    ln -s concat.pick.unique.nr_v119.wang.pick.taxonomy final.taxonomy
+    ln -s concat.pick.unique.nr_v123.wang.pick.taxonomy final.taxonomy
     ln -s concat.pick.pick.names final.taxonomy.names # Taxonomy uses a different names file!
 
     # The taxonomy file and its namefile don't correspond with other files. Thus we
@@ -472,7 +479,7 @@ system(cp final.an.shared final.otu.shared)
 
 # Get consensus OTU classifications using existing classifications
 # Use name file corresponding to taxonomy (not the FASTA)
-classify.otu(list=final.an.list, group=final.groups, taxonomy=final.taxonomy, name=final.taxonomy.names, label=0.03, reftaxonomy=silva.nr_v119.tax)
+classify.otu(list=final.an.list, group=final.groups, taxonomy=final.taxonomy, name=final.taxonomy.names, label=0.03, reftaxonomy=silva.nr_v123.tax)
 
 # Make trees indicating community similarity
 tree.shared(shared=final.otu.shared, calc=thetayc-jclass)
@@ -534,6 +541,14 @@ $MOTHUR "#make.biom(shared=final.otu.shared, constaxonomy=final.an.0.03.cons.tax
 # Using the BIOM package (bundled in QIIME), output human-readable description
 # of the BIOM file.
 biom summarize-table -i final.otu.0.03.biom -o otu_table.biom.summary.txt
+
+## make better plots
+Rscript betterplots.R rawfile.final.otu.0.03.biom rawfile.mapping Phylum NO
+Rscript betterplots.R rawfile.final.otu.0.03.biom rawfile.mapping Class NO
+Rscript betterplots.R rawfile.final.otu.0.03.biom rawfile.mapping Order NO
+Rscript betterplots.R rawfile.final.otu.0.03.biom rawfile.mapping Family NO
+Rscript betterplots.R rawfile.final.otu.0.03.biom rawfile.mapping Genus NO
+
 
 if [ "$DO_CORE_DIVERSITY" = true ]; then
     # Sort the samples in the OTU table by treatment
