@@ -52,7 +52,10 @@ conf.mv_biom_file().exec_cmnd_and_log()
 conf.gen_sort_otu_table_cmd().exec_cmnd_and_log()
 conf.summarize_taxa().exec_cmnd_and_log()
 conf.gen_plot_taxa_summary_cmd().exec_cmnd_and_log()
-conf.gen_make_otu_heatmap_cmd().exec_cmnd_and_log()
+#conf.gen_make_otu_heatmap_cmd().exec_cmnd_and_log()
+
+#adding phyloseq command
+conf.gen_phyloseq_images_cmd().exec_cmnd_and_log()
 
 # conf.ensure_user_input_depth_lt_mean_depth( depth )
 
@@ -60,6 +63,7 @@ conf.gen_alpha_rarefaction_cmd().exec_cmnd_and_log() # only if too few sampl.exe
 conf.gen_core_diversity_cmd( depth ).exec_cmnd_and_log()
 #switched this over to the ITS version
 conf.gen_core_diversity_ITS_cmd( depth ).exec_cmnd_and_log()
+
 conf.rm_alpha_rare_dir_if_already_run_core_div()
 conf.gen_jacknifed_beta_div( depth ).exec_cmnd_and_log()
 conf.make_bootstrapped_tree_unweighted_cmd().exec_cmnd_and_log()

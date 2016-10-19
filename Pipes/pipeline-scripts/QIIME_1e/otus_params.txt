@@ -1,1 +1,2 @@
-../QIIME_1a/otus_params.txt
+pick_otus:enable_rev_strand_match True
+summarize_taxa:absolute_abundance True
