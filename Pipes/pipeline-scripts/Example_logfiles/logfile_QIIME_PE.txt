@@ -35,14 +35,11 @@ has_overide_core_div : False
 region_dacc : v1v3
 functional_enrichment : True
 core_microbiome : False
-usecode : UCGOBCBB
-test_files : https://s3.amazonaws.com/nephele-pipelines-development/Test-Files/public-test-data/MiSeq_paired-end_cell2015_subset_ed.csv;https://s3.amazonaws.com/nephele-pipelines-development/Test-Files/public-test-data/6subset_Cell2015s.zip
 body_site : Saliva
 ami_id : ami-6810de05
 has_barcode : True
 warnings_log : <logging.Logger object at 0x7fb837792ed0>
 reverse_complement : True
-email : ian.misner@nih.gov
 do_run_core_div : True
 ref_taxonomy_file : /home/ubuntu/ref_dbs/silva/SILVA123_QIIME_release/taxonomy/16S_only/99/taxonomy_7_levels.txt
 is_demultiplex : False
