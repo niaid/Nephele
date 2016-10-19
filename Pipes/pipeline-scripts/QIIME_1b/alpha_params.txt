@@ -1,1 +1,1 @@
-../QIIME_1a/alpha_params.txt
+alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_species
