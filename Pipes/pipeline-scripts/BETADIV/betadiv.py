@@ -6,7 +6,7 @@ import cfg as neph_cfg
 from collections import namedtuple
 from itertools import groupby
 import logging
-from sh import mkdir, wget, unzip
+from sh import mkdir, wget, unzip, guess_fq_score_type
 from optparse import OptionParser
 import subprocess
 import multiprocessing
@@ -25,10 +25,16 @@ import multiprocessing
 # g) run script in qiime to plot bargraphs
 
 IDs_to_dist = namedtuple('IDs_to_dist', ['user_s_id','DACC_s_id','distance'] )
-Sample = namedtuple('Sample', ['sample_id', 'fwd_fq_file'] )
+Sample = namedtuple('Sample', ['sample_id',
+                               'BarcodeSequence',
+                               'ForwardFastqFile',
+                               'ReverseFastqFile',
+                               'Head',
+                               'Line'] )
 
 class Cfg:
     _FILE_ROOT = '/home/ubuntu/ref_dbs/otus/beta_div_analysis_files/'
+    _BASE = 'HMP_compare_results/'
 
     DAC_body_sites = ['Anterior_nares',
                       'Attached_Keratinized_gingiva',
@@ -51,26 +57,28 @@ class Cfg:
                       'Vaginal_introitus']
     composite_sites = ['Oral_cavity', 'Skin', 'Urogenital_tract']
 
-    HMP_SPLT_OUT_DIR = 'hmp_split_lib_out_dir'
-    USER_SPLT_OUT_DIR = 'user_split_lib_out_dir'    
-
-    HMP_CLOSED_OTUS_OUT_DIR = 'hmp_closed_otus_out_dir'
-    USER_CLOSED_OTUS_OUT_DIR = 'user_closed_otus_out_dir'
+    HMP_SPLT_OUT_DIR = _BASE + 'hmp_split_lib_outs'
+    USER_SPLT_OUT_DIR = 'split_lib_out'
+    
+    HMP_CLOSED_OTUS_OUT_DIR = _BASE + 'hmp_closed_otus_outs'
+    USER_CLOSED_OTUS_OUT_DIR = _BASE + 'user_closed_otus_outs'
     DACC_BIOM_FILE = HMP_CLOSED_OTUS_OUT_DIR + '/otu_table.biom'
     USER_BIOM_FILE = USER_CLOSED_OTUS_OUT_DIR + '/otu_table.biom'
 
-    MERGED_BIOM_FILE_OUT = 'user_dacc_merged.biom'
-    MERGED_MAP_FILE_OUT = 'user_dacc_merged.map'
-    BETA_PLOTS_OUT_DIR = 'beta_diversity_plots'
+    MERGED_BIOM_FILE_OUT = _BASE + 'user_hmp_merged.biom'
+    MERGED_MAP_FILE_OUT = _BASE + 'user_hmp_merged.map'
+    BETA_PLOTS_OUT_DIR = _BASE + 'beta_diversity_plots'
     TAX_LEVEL_PLOTTED = 4
+    SUMMARIZE_TAXA_OUT_DIR = _BASE + 'per_sample_biom_files/'
     
-    BETA_DIV_OUT_DIR = 'beta_diversity_outs'
-    BETA_DIV_OUT_FNAME = BETA_DIV_OUT_DIR + '/bray_curtis_user_dacc_merged.txt'
-    OTU_HEATMAP_OUT_DIR = 'OTU_Heatmap/'
+    BETA_DIV_OUT_DIR = _BASE + 'beta_diversity_outs'
+    BETA_DIV_OUT_FNAME = BETA_DIV_OUT_DIR + '/bray_curtis_user_hmp_merged.txt'
 
 def setup_logger( log_name ):
     formatter = logging.Formatter(fmt='[ %(asctime)s - %(levelname)s ] %(message)s\n')
-    fh = logging.FileHandler('logfile_cmp_to_DACC.txt')
+    if not os.path.isdir(Cfg._BASE):
+        mkdir(Cfg._BASE)
+    fh = logging.FileHandler( Cfg._BASE + 'logfile_cmp_to_HMP.txt' )
     fh.setLevel(logging.INFO)
     fh.setFormatter(formatter)
     logger = logging.getLogger(log_name)
@@ -109,7 +117,7 @@ def gen_filter_cmnd( input_biom, sample_ids_file, mapping_fp, output_mapping_fp,
 def gen_summarize_taxa_cmd( biom_file, sample ):
     return 'summarize_taxa.py '\
         + ' --otu_table_fp=' + biom_file\
-        + ' --output_dir=' + sample
+        + ' --output_dir=' + Cfg.SUMMARIZE_TAXA_OUT_DIR + sample
 
 def gen_merge_otu_tables_cmd(biom_file_a, biom_file_b):
     return 'merge_otu_tables.py '\
@@ -135,12 +143,20 @@ def gen_beta_diversity_through_plots( biom_file, map_file, tree_file, out_dir ):
         + ' --tree_fp='+ tree_file\
         + ' --jobs_to_start=' + str(int(multiprocessing.cpu_count()))\
         + ' --parallel'\
+        + ' --parameter_fp=betadiv_params.txt'\
         + ' --output_dir=' + out_dir
+
+def gen_phyloseq_images_cmd( biom_file, map_file, taxa ):
+    return 'Rscript betterplots.R '\
+                       + " " + biom_file\
+                       + " " + map_file\
+                       + " " + taxa\
+                       + " YES"
         
 def gen_plot_taxa_summary_cmd( counts_fname, out_dir ):
     return 'plot_taxa_summary.py '\
         + ' --counts_fname=' + counts_fname\
-        + ' --dir_path=' + out_dir
+        + ' --dir_path=' + Cfg.SUMMARIZE_TAXA_OUT_DIR + out_dir
 
 # this seems to hang
 # def gen_make_otu_heatmap_cmd ( biom_file ):
@@ -184,6 +200,7 @@ def print_n_samples_to_file( samples, n ):
     fname = user_s_id + '/' + user_s_id + '.list'
     with open(fname, 'w') as f_out:
         print ("\t".join(['S_ID', 'Distance']), file=f_out)
+        print ("\t".join([user_s_id, '0.0']), file=f_out)
         for i in range(0, n):
             print ("\t".join([ samples[i].DACC_s_id, str( samples[i].distance )]), file=f_out)
     return fname
@@ -191,47 +208,158 @@ def print_n_samples_to_file( samples, n ):
 def get_DACC_region_file( region ):
     fname = region + '_reads.zip'
     if not os.path.isfile(fname):
-        wget('path_to_hmp_data' + fname)
         unzip('-o', fname)
     
 def get_DACC_map_file (body_site, region_dacc):
-    fname = 'path_to_hmp_data' + body_site + '_' + region_dacc +'.mapping.txt'
     if not os.path.isfile(os.path.basename(fname)):
         wget(fname)
     return os.path.basename(fname)
 
 def gen_closed_reference_cmd( inputs, out_dir, ref_fasta_file, ref_taxonomy_file ):
+    #        + ' --parallel'\ < this blows things up
+    # + ' --jobs_to_start='+ str(int(multiprocessing.cpu_count() / 4))\
     return  "pick_closed_reference_otus.py "\
         + " -i " + inputs\
         + " --output_dir=" + out_dir \
         + ' --reference_fp=' + ref_fasta_file \
         + ' --taxonomy_fp=' + ref_taxonomy_file \
-        + ' --parallel'\
-        + ' --jobs_to_start='+ str(int(multiprocessing.cpu_count() / 4))\
         + ' --force' 
         
 def gen_split_lib_for_fastq_cmd( samples, dacc_map_file, out_dir ):
     inputs = list()          # seq file names
     sample_ids = list()      # all sample IDs        
     for sample in samples:
-        inputs.append(sample.fwd_fq_file)
+        inputs.append(sample.ForwardFastqFile)
         sample_ids.append(sample.sample_id)
-        s = 'split_libraries_fastq.py '\
-            + ' --output_dir=' + out_dir\
-            + ' --barcode_type=not-barcoded'\
-            + ' --mapping_fps=' + dacc_map_file \
-            + ' --phred_offset=64'\
-            + ' -i ' + ','.join(inputs) \
-            + ' --sample_ids=' + ','.join(sample_ids)
+    phred_offset = guess_fq_score_type(samples[0].ForwardFastqFile)
+    s = 'split_libraries_fastq.py '\
+        + ' --output_dir=' + out_dir\
+        + ' --barcode_type=not-barcoded'\
+        + ' --mapping_fps=' + dacc_map_file \
+        + ' --phred_offset=' + str(phred_offset)\
+        + ' -i ' + ','.join(inputs)\
+        + ' --sample_ids=' + ','.join(sample_ids)
     return s
 
-def gen_samples( fname ):
+def lookup_bc_len_from_map( fname ):
     with open(fname) as f:
         reader = csv.DictReader(f, delimiter='\t')
-        samples = [ Sample( sample_id = row['#SampleID'],
-                            fwd_fq_file = row['ForwardFastqFile'] ) for row in reader ]
+        if BarcodeSequence in row:
+            return len( row['BarcodeSequence'] )
+        
+def gen_samples( fname ):
+    # Mothur Paired End map
+    #SampleID BarcodeSequence LinkerPrimerSequence	ForwardFastqFile ReverseFastqFile TreatmentGroup	ReversePrimer	Description
+
+    # Mothur 454 map
+    #SampleID BarcodeSequence LinkerPrimerSequence	                                  TreatmentGroup  Description
+
+    # qiime
+    #SampleID BarcodeSequence LinkerPrimerSequence	TreatmentGroup	ExtraTestCol	More	Description
+    with open(fname) as f:
+        reader = csv.DictReader( f, delimiter='\t' )
+        samples = list()
+        for row in reader:
+            if 'ForwardFastqFile' in row.keys() and 'ReverseFastqFile' in row.keys():
+                sample = Sample( sample_id = row['#SampleID'],
+                                 BarcodeSequence = row['BarcodeSequence'],
+                                 ForwardFastqFile = row['ForwardFastqFile'],
+                                 ReverseFastqFile = row['ReverseFastqFile'],
+                                 Head = row.keys(),
+                                 Line = row.values() )
+            elif 'ForwardFastqFile' in row.keys():
+                sample = Sample( sample_id = row['#SampleID'],
+                                 BarcodeSequence = row['BarcodeSequence'],
+                                 ForwardFastqFile = row['ForwardFastqFile'],
+                                 ReverseFastqFile = '',
+                                 Head = row.keys(),
+                                 Line = row.values() )
+            else:
+                sample = Sample( sample_id = row['#SampleID'],
+                                 BarcodeSequence = row['BarcodeSequence'],
+                                 ForwardFastqFile = '',
+                                 ReverseFastqFile = '',
+                                 Head = row.keys(),
+                                 Line = row.values() )
+            samples.append(sample)
+                                        
+        # samples = [ Sample( sample_id = row['#SampleID'], ForwardFastqFile = row['ForwardFastqFile'] )
+        #             if 'ForwardFastqFile' in row
+        #             else Sample( sample_id = row['#SampleID'], ForwardFastqFile = '')
+        #             for row in reader ]
         return samples
     
+def gen_split_libraries_cmd( samples, map_file, seqs_file, qual_file ):
+    return 'split_libraries.py '\
+        + ' --dir_prefix=split_lib_out'\
+        + ' --barcode_type=' + str(len(sample[0].BarcodeSequence))\
+        + ' --min_seq_length=200'\
+        + ' --max_ambig=6'\
+        + ' --max_homopolymer=6'\
+        + ' --max_primer_mismatch=0'\
+        + ' --max_barcode_errors=1.5'\
+        + ' --disable_bc_correction'\
+        + ' --qual_score_window=50'\
+        + ' --max_seq_length=1000'\
+        + ' --min_qual_score=25'\
+        + ' --map=' + map_file\
+        + ' --fasta=' + seqs_file\
+        + ' --qual=' + qual_file
+
+
+def gen_split_libraries_mothur_PE( samples, maps ):
+    # + cfg.SPLIT_LIB_OUT_DIR \
+    inputs = list()
+    maps = list()
+    sample_ids = list()
+    phred_offset = guess_fq_score_type(samples[0].ForwardFastqFile)
+
+    for sample in samples:
+        inputs.append(sample.sample_id + '/fastqjoin.join.fastq')
+        maps.append(sample.sample_id + '/map.txt')
+        sample_ids.append(sample.sample_id)
+                
+    return 'split_libraries_fastq.py '\
+        + ' --output_dir=split_lib_out'\
+        + ' --phred_quality_threshold=25'\
+        + ' --sequence_max_n=0'\
+        + ' --barcode_type=not-barcoded ' \
+        + ' --max_bad_run_length=3'\
+        + ' --sequence_read_fps=' + ','.join(inputs) \
+        + ' --mapping_fps=' + ','.join(maps) \
+        + ' --phred_offset=' + str(phred_offset)\
+        + ' --sample_ids=' + ','.join(sample_ids)
+
+def gen_per_sample_single_map_file ( samples ):
+    map_files = list()
+    for sample in samples:
+        dname = sample.sample_id 
+        if not os.path.isdir( dname ):
+            log_no_run_bc_missing_file( dname, 'No output directory' )
+        else:
+            # head = ['#SampleID','BarcodeSequence','LinkerPrimerSequence','ForwardFastqFile',\
+            #         'ReverseFastqFile','TreatmentGroup','Description']
+            # line = [sample.sample_id, sample.BarcodeSequence, sample.LinkerPrimerSequence, \
+            #         sample.ForwardFastqFile, sample.ReverseFastqFile, \
+            #         sample.TreatmentGroup, sample.Description]
+            with open ( dname + '/' + 'map.txt', 'w' ) as f_out:
+                print ("\t".join( sample.Head ), file = f_out)
+                print ("\t".join( sample.Line ), file = f_out)
+            map_files.append(f_out)
+    return f_out
+
+def gen_join_paired_end_cmd( samples ):
+    cmds = list()
+    for sample in samples:
+        cmd = 'join_paired_ends.py '\
+            + ' --output_dir=' + sample.sample_id\
+            + ' --forward_reads_fp=' + sample.ForwardFastqFile\
+            + ' --reverse_reads_fp=' + sample.ReverseFastqFile\
+            + ' --perc_max_diff=25'\
+            + ' --min_overlap=10'
+        cmds.append(cmd)
+    return cmds
+
 def main( inputs ):
     log = setup_logger('COMPARE_TO_HMP')
     DACC_map_file = get_DACC_map_file( inputs.body_site, inputs.region_dacc )
@@ -239,10 +367,20 @@ def main( inputs ):
     DACC_samples = gen_samples( DACC_map_file )
     user_samples = gen_samples( inputs.map_file )
     
-    exec_cmnd( gen_split_lib_for_fastq_cmd( DACC_samples, DACC_map_file, Cfg.HMP_SPLT_OUT_DIR),log)
-    exec_cmnd( gen_split_lib_for_fastq_cmd( user_samples,
+    exec_cmnd( gen_split_lib_for_fastq_cmd( DACC_samples, DACC_map_file, Cfg.HMP_SPLT_OUT_DIR), log )
+    if inputs.user_seqs == 'rawfile.fasta': # this implies we're running Mothur 454
+        exec_cmnd( gen_split_libraries_cmd( user_samples,
                                             inputs.map_file,
-                                            Cfg.USER_SPLT_OUT_DIR), log)
+                                            'rawfile.fasta',
+                                            'rawfile.qual'), log )
+    elif inputs.user_seqs == 'fileList.paired.file': # this implies Mothur MiSeq
+        exec_cmnd( gen_join_paired_end_cmd( user_samples ), log )
+        # conf.ensure_output_exists( conf.get_join_paired_end_outputs() )
+        maps = gen_per_sample_single_map_file( user_samples )
+        exec_cmnd( gen_split_libraries_mothur_PE( user_samples, maps ), log)
+
+    # else we already have split_lib_out/seqs.fna
+
     # for DACC
     exec_cmnd(gen_closed_reference_cmd( Cfg.HMP_SPLT_OUT_DIR + '/seqs.fna',
                                         Cfg.HMP_CLOSED_OTUS_OUT_DIR,
@@ -282,7 +420,10 @@ def main( inputs ):
                                         id_file + '.biom'), log )
             exec_cmnd( gen_summarize_taxa_cmd(id_file + '.biom', sample), log)
             in_fname_base = id_file + '_L' + str(Cfg.TAX_LEVEL_PLOTTED)
-            exec_cmnd( gen_plot_taxa_summary_cmd(in_fname_base + '.txt', sample), log)
+#            exec_cmnd( gen_plot_taxa_summary_cmd('HMP_compare_results/taxa_plots/' + in_fname_base + '.txt', sample), log)
+            taxa_levels = ["Phylum", "Class", "Order", "Family", "Genus"]
+            for taxa in taxa_levels:
+                exec_cmnd( gen_phyloseq_images_cmd( id_file + '.biom', id_file + '.map', taxa), log)
             #           exec_cmnd( gen_make_otu_heatmap_cmd( id_file + '.biom' ), log)
     
 if __name__ == "__main__":
@@ -297,7 +438,12 @@ if __name__ == "__main__":
                                                                      "Greengenes_99",
                                                                      'SILVA_97', "SILVA_99"] )
     parser.add_option( "--region_dacc", type = "choice", choices = [ "v1v3", "v3v5", "v6v9" ] )
+    parser.add_option( "--user_seqs", type = "string", default="qiime" )
     (options, args) = parser.parse_args()
+    if not os.path.isfile(options.user_seqs):
+        print("Ensure sequence file exists, cannot find:" + options.user_seqs)
+        exit(1)
+
     if not os.path.isfile(options.map_file):
         print("Ensure your map file exists, cannot find:" + options.map_file)
         exit(1)
