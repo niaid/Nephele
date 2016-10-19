@@ -18,6 +18,8 @@ from collections import namedtuple
 # tax
 # taxonomy
 
+True_false_dict = {'NO':False, 'N':False, 'FALSE':False, 'YES':True, 'Y':True, 'TRUE':True}
+
 class Cfg:
     BASE = 'fileList.paired'
     MAKE_FILE_CMD_OUTPUT = BASE + '.file'
@@ -222,9 +224,9 @@ def exec_cmnd( cmds ):
 
 def ensure_file_is_csv( fname ):
     fname_no_ext, ext = os.path.splitext( fname )
-    if ext == '.csv' or ext == '.txt':
+    if ext.lower() == '.csv' or ext.lower() == '.txt' or ext.lower() == '.mapping':
         return fname
-    elif ext == '.xlsx':
+    elif ext.lower() == '.xlsx' or ext.lower() == '.xls':
         wb = openpyxl.load_workbook( fname )
         ws = wb.active
         csv_fname = fname_no_ext + '.csv'
@@ -249,7 +251,7 @@ def unzip_and_junk_path(fname):
     files_unzipped = list()
     with zipfile.ZipFile( fname ) as zf:
         files_unzipped = [os.path.basename(f) for f in ignore_mac_osx_files(zf.namelist())]
-        unzip('-j', fname)
+        unzip('-jo', fname)     # -o is overwrite
     return files_unzipped
 
 def unzip_input_file( fname ):
@@ -340,6 +342,8 @@ def prep_output_files():
     cp_if_exists( Cfg.CLASSIFY_OTUS_TAX_SMMRY, Cfg.COLLATED_OUTS )
     cp_if_exists( Cfg.LEFSE_OUT, Cfg.COLLATED_OUTS )
     cp_if_exists( Cfg.FINAL_FA, Cfg.COLLATED_OUTS )
+    cp_if_exists( 'HMP_compare_results', Cfg.COLLATED_OUTS )
+    cp_if_exists( 'taxa_plots_and_heatmaps', Cfg.COLLATED_OUTS )
 
     # cp *trim.unique.fasta Cfg.COLLATED_OUTS/
     # #cp -r *_with_HMPDACC_v13 Cfg.COLLATED_OUTS/ 
@@ -391,11 +395,34 @@ class Mothur_MiSeq_PE:
             elif key == 'MINFLOWS': self.minflows = value
             elif key == 'OPTIMIZE': self.optimize = value
             elif key == 'DATABASE': self.database = value
+            # HMP STARTS HERE
+            elif key == 'COMP_WITH_DACC': 
+                if value.upper() not in True_false_dict:
+                    log.info('Value for COMP_WITH_DACC not valid.'.format(value) )
+                    do_end_operations()
+                    exit(1)
+                else:    
+                    self.comp_with_dacc = True_false_dict[value.upper()]
+            elif key == 'BODY_SITE': self.body_site = value
+            elif key == 'REGION_DACC': self.region_dacc = value
+            elif key == 'HMP_DATABASE': self.hmp_database = value
+            elif key == 'NEAREST_N_SAMPLES': self.nearest_n_samples = value
+            # HMP ENDS HERE
             else:
                 log.warn('Not sure what to do with param {0}, set to {1}; ignoring.'.format(key, value))
         
         unzip_input_file(self.reads_zip)
         self.samples = self.load_samples_from_map( self.map_file )
+
+    def gen_compare_to_HMP_cmd( self ):
+        if self.comp_with_dacc:
+            return  './betadiv.py '\
+                + " --user_seqs=" + Cfg.MAKE_FILE_CMD_OUTPUT\
+                + " --body_site=" + self.body_site\
+                + " --map_file=" + self.map_file\
+                + " --hmp_database=" + self.hmp_database\
+                + " --nearest_n_samples=" + self.nearest_n_samples\
+                + " --region_dacc=" + self.region_dacc
         
     @staticmethod
     def load_samples_from_map( fname ):
@@ -795,6 +822,14 @@ class Mothur_MiSeq_PE:
         return int(float(max_depth))
 
     @staticmethod
+    def gen_betterplots(input_biom_fp, map_file, rank):
+        return 'Rscript betterplots.R'\
+            + ' ' + input_biom_fp\
+            + ' ' + map_file\
+            + ' ' + str(rank)\
+            + ' NO'
+
+    @staticmethod
     def gen_core_diversity_analysis(input_biom_fp, map_file, treatment_groups, depth):
         return 'core_diversity_analyses.py '\
             + ' --output_dir=' + Cfg.CORE_DIV_OUT_DIR\
@@ -823,14 +858,13 @@ class Mothur_MiSeq_PE:
             do_end_operations()
             exit(1)            
         return tgs
-    
+
     @staticmethod
     def gen_otu_heatmap_cmd( biom_file ):
         return 'make_otu_heatmap.py '\
             + ' -i ' + biom_file\
             + ' --imagetype=svg'\
             + ' -o ' + Cfg.OTU_Heatmap
-
 
 log = setup_logger()            # this is a bit scruffy. This is just a global. could be singleton?
 config_fname = sys.argv[1]
@@ -844,7 +878,7 @@ if __name__ == '__main__':
         elif config_fname.endswith( '.csv' ):
             input_dict = read_mm_csv(config_fname)
             
-pipe = Mothur_MiSeq_PE( input_dict )
+pipe = Mothur_MiSeq_PE( input_dict ) 
 
 pipe.gen_home_rolled_file_cmd( pipe.samples )
 ensure_file_exists( Cfg.MAKE_FILE_CMD_OUTPUT )
@@ -862,13 +896,16 @@ exec_cmnd( pipe.gen_unique_seqs_cmd( Cfg.GOOD_CONTIGS_FQ) )
 ensure_file_exists( Cfg.UNIQUE_SEQS_OUT_NAMES )
 ensure_file_exists( Cfg.UNIQUE_SEQS_OUT_FA )
 
+# COMP TO HMP STUFF
+exec_cmnd( pipe.gen_compare_to_HMP_cmd( ) )
+
 exec_cmnd( pipe.gen_count_seqs_cmd() )
 ensure_file_exists( Cfg.COUNT_SEQS_OUT )
     
 head("-1000", Cfg.UNIQUE_SEQS_OUT_FA, _out=Cfg.UNIQUE_SEQS_OUT_FA_FRST_K)
 ensure_file_exists( Cfg.UNIQUE_SEQS_OUT_FA_FRST_K )
  
-  
+
 exec_cmnd( pipe.gen_align_seqs_cmd( Cfg.UNIQUE_SEQS_OUT_FA_FRST_K, Cfg.SILVA_SEED_ALIGN ) )
 ensure_file_exists( Cfg.GEN_ALIGN_SEQS_FIRST_K )
 
@@ -1046,6 +1083,10 @@ exec_cmnd( pipe.gen_biom_summarize_table( Cfg.FINAL_BIOM, Cfg.OTU_BIOM_SUMMARY) 
 
 exec_cmnd( pipe.gen_sort_otu_table(Cfg.FINAL_BIOM, pipe.map_file, 'TreatmentGroup') )
 
+taxa_levels = ["Phylum", "Class", "Order", "Family", "Genus"]
+for taxa in taxa_levels:
+    exec_cmnd( pipe.gen_betterplots( Cfg.SORTED_BIOM, pipe.map_file, taxa ))
+
 depth = int( Cfg.DEPTH_SCALER * pipe.lookup_max_depth_from_biom_summry( Cfg.OTU_BIOM_SUMMARY ) )
 all_tgs = pipe.lookup_tgs_from_map_file( pipe.map_file )
 
@@ -1054,7 +1095,6 @@ if len(pipe.samples) > Cfg.MIN_NUM_SAMPLES_FOR_CD:
 else:
     log.info('Due to there being only {0} samples listed core diversity analysis cannot be performed\n'
              .format(len(pipe.samples)))
-exec_cmnd( pipe.gen_otu_heatmap_cmd (Cfg.SORTED_BIOM) )
-
+#exec_cmnd( pipe.gen_otu_heatmap_cmd (Cfg.SORTED_BIOM) )
 do_end_operations()
 exit(0)
