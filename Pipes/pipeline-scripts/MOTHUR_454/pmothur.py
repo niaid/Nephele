@@ -11,6 +11,15 @@
 import sys, os, random, time, glob
 syscall = lambda cmd: (os.popen(cmd).read()).rstrip("\n")
 
+def gen_compare_to_HMP_cmd( seqs, body_site, map_file, hmp_database, nearest_n_samples, region_dacc ):
+   return  './betadiv.py '\
+      + " --user_seqs=" + seqs\
+      + " --body_site=" + body_site\
+      + " --map_file=" + map_file\
+      + " --hmp_database=" + hmp_database\
+      + " --nearest_n_samples=" + nearest_n_samples\
+      + " --region_dacc=" + region_dacc
+
 def read_config( file_name, config ): #########################
    config_file=open( file_name, 'r')
    l=[]
@@ -30,6 +39,8 @@ def read_config( file_name, config ): #########################
 ### read_config ###
 
 def send2log( message, log_file ): #######################
+   if not os.path.isfile(log_file):
+      os.system( "touch " + log_file)
    date = syscall("TZ='America/New_York' date")
    os.system( "echo >> "+log_file)
    if 0!=os.system( "echo '"+date+' '+message+"' >>"+log_file):
@@ -130,7 +141,7 @@ send2log( w, log_file )
 ####################################################
 # DEFAULT OPTIONS
 for key in ['FLIP','KEEPFIRST','MAXAMBIG','MAXFLOWS','MAXHOMOP','MINFLOWS','MINLENGTH',\
-            'CORE_DIVERSITY_ANALYSES','BOOTSTRAPPED_TREE','BS_LIST','STABILITY_FILE',\
+            'CORE_DIVERSITY_ANALYSES','BOOTSTRAPPED_TREE','BODY_SITE','STABILITY_FILE',\
             'OPTIMIZE','CRITERIA','PDIFFS','COMP_WITH_DACC','MAP_FILE','DESIGN_MAP_FILE']:
    if(key not in config.keys()):
       config[key]=''
@@ -139,12 +150,12 @@ if(''==config['OPTIMIZE']):
    config['OPTIMIZE']='start-end'
 if(''==config['CRITERIA']):
    config['CRITERIA']='90'
-if (''==config['MAP_FILE']):
-   config['MAP_FILE']=config['DESIGN_MAP_FILE']
-if (''!=config['DESIGN_MAP_FILE']):
-   config['MAP_FILE']=config['DESIGN_MAP_FILE']
+# if (''==config['MAP_FILE']):
+#    config['MAP_FILE']=config['DESIGN_MAP_FILE']
+# if (''!=config['DESIGN_MAP_FILE']):
+#    config['MAP_FILE']=config['DESIGN_MAP_FILE']
 
-send2log("The Mapping file is now set to " +config['MAP_FILE'], log_file)
+# send2log("The Mapping file is now set to " +config['MAP_FILE'], log_file)
 
 if len(config['FLIP'])>1:
    config['FLIP']=config['FLIP'][0]
@@ -178,12 +189,12 @@ if len( config['C_OPT'] ) <3:
 if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config['INPUT_TYPE']) :
    # unzip sff files if they are zipped
    w=''
-   w=syscall('ls *.zip')
-   if(''!=w):
-      zip_list=w.split()
-      for zip_file in zip_list:
-         cmd='unzip -oqj '+gz_file+' >> ../'+log_file+' 2>&1'
-         exec_sys(cmd)
+   # w=syscall('ls *.zip')
+   # if(''!=w):
+   #    zip_list=w.split()
+   #    for zip_file in zip_list:
+   #       cmd='unzip -oqj '+zip_file+' >> ../'+log_file+' 2>&1'
+   #       exec_sys(cmd)
 
    # Generate OLIGO and DESIGN file from map file
    send2log( 'Generating OLIGO and DESIGN file from map file...', log_file )
@@ -400,6 +411,17 @@ if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config
    cmd="echo '# Processing Step 2: Clusters redundant sequences and aligns to the SILVA based reference alignment provided' >"+mothur_batch
    exec_sys(cmd)
 
+   if config['COMP_WITH_DACC'] == 'YES':      
+      cmd = gen_compare_to_HMP_cmd('rawfile.fasta',
+                                   config['BODY_SITE'],
+                                   config['MAP_FILE'],
+                                   config['HMP_DATABASE'],
+                                   config['NEAREST_N_SAMPLES'],
+                                   config['REGION_DACC'] )
+      send2log( 'executing:'+cmd, log_file )
+      exec_sys(cmd)
+
+   
    # unique.seqs(fasta=rawfile.shhh.trim.fasta, name=rawfile.shhh.trim.names)
    add2mothur_cmd('unique.seqs(fasta=rawfile.shhh.trim.fasta, name=rawfile.shhh.trim.names)',mothur_batch)
 
@@ -578,6 +600,15 @@ if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config
    cmd='biom summarize-table -i rawfile.final.an.0.03.biom -o rawfile.biom.summary.txt'
    send2log( 'executing:'+cmd, log_file )
    exec_sys(cmd)
+
+
+   ## make better plots
+   taxa_levels = ["Phylum", "Class", "Order", "Family", "Genus"]
+   for taxa in taxa_levels:
+      cmd="Rscript betterplots.R rawfile.final.an.0.03.biom "+config['MAP_FILE']+ " " + taxa + " NO"
+      send2log("executing "+cmd, log_file)
+      exec_sys(cmd)
+
 
    # core_diversity_analyses.py -o core_diversity/ -i rawfile.final.an.0.03.biom -m Iontorrent_demo.mapping 
    # -e 1000 --nonphylogenetic_diversity -c "Treatment"
@@ -1218,26 +1249,5 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    # categorize_by_function.py -i predicted_metagenomes.biom -c KEGG_Pathways -l 3 -o predicted_metagenomes.L3.biom
    # categorize_by_function.py -f -i predicted_metagenomes.biom -c KEGG_Pathways -l 3 -o predicted_metagenomes.L3.txt
 #############################################################################
-
-if 'NONE'!=config['BS_LIST']:
-   if 'MAP_FILE' not in config.keys():
-      config['MAP_FILE']=config['DESIGN_MAP_FILE']
-   # create config file
-   biom_file=syscall('ls rawfile.final*.biom | grep -v sorted')
-   if len(biom_file) > 0:
-      send2log( 'Checking for most similar samples in HMP DACC', log_file )
-      send2log( 'for BIOM file:'+biom_file+" created by this pipeline: with mapping file: "+config['MAP_FILE'], log_file )
-      fhc=open( 'beta_div_conf.csv', 'w')
-      fhc.write('BIOM_FILE_0,'+biom_file+"\n")
-      fhc.write('MAP_FILE_0,'+config['MAP_FILE']+"\n")
-      fhc.write('BS_LIST,'+config['BS_LIST']+"\n")
-      fhc.write("DACC_ONLY,YES\n")
-      fhc.write("METRICS,bray_curtis\n")
-      fhc.write("MAX_NUM,5\n")
-      fhc.write("PIPELINE_TYPE,COMP_WITH_DACC\n")
-      fhc.close()
-      cmd="./beta_div.py beta_div_conf.csv >> "+log_file+" 2>&1"
-      send2log( 'executing:'+cmd, log_file )
-      exec_sys(cmd)
 
 send2log( 'Mothur Pipeline DONE',log_file )
