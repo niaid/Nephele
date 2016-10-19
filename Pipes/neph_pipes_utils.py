@@ -258,6 +258,7 @@ class Config:
                     self.do_exit_operations()
                     exit(1)
                 else:
+                    self.database = value
                     self.ref_fasta_file = cfg.DB_V_TO_REF_FASTA_FILE[value]
                     self.ref_taxonomy_file = cfg.DB_V_TO_REF_TAXONOMY_FILE[value]
                     self.tree_file = cfg.DB_V_TO_TREE_FILE[value]
@@ -385,13 +386,23 @@ class Config:
     def gen_compare_to_HMP_cmd(self):
         if self.comp_with_dacc:
             self.cmds.append( './betadiv.py '\
+                              + " --user_seqs=" + cfg.SPLIT_LIB_OUT_DIR+'/seqs.fna'\
                               + " --body_site=" + self.body_site\
                               + " --map_file=" + self.map_file\
                               + " --hmp_database=" + self.hmp_database\
                               + " --nearest_n_samples=" + self.nearest_n_samples\
                               + " --region_dacc=" + self.region_dacc )
         return self
-        
+    def gen_phyloseq_images_cmd(self):
+        taxa_levels = ["Phylum", "Class", "Order", "Family", "Genus"]
+        for taxa in taxa_levels:
+            self.cmds.append( 'Rscript betterplots.R '\
+                               + " " + self.lookup_biom_file()\
+                               + " " + self.map_file\
+                               + " " + taxa\
+                               + " NO" )
+        return self
+
     def update_otus_params_file_for_ITS(self):
         if self.analysis_type == 'OPEN_REFERENCE_ITS':
             with open (self.otus_params_file, 'a') as f_out:
@@ -474,6 +485,7 @@ class Config:
         return handler.baseFilename
     
     def gather_all_files_to_link(self):
+        #       files_to_link.extend( self.get_taxa_out() )
         files_to_link = list()
         files_to_link.extend( self.link_seqs_fasta() )
         files_to_link.extend( self.link_otu_biom_file() )
@@ -488,8 +500,8 @@ class Config:
         files_to_link.extend( self.link_logfile() )
         files_to_link.extend( self.get_core_microbiome_dirs() )
         files_to_link.extend( self.get_chimera_out() )
-        files_to_link.extend( self.get_taxa_out() )
         files_to_link.extend( self.get_alpha_out() )
+        files_to_link.extend( self.get_phyloseq_images() )
         return files_to_link
 
     def get_chimera_out( self ):
@@ -555,8 +567,7 @@ class Config:
         return [ File_to_link_name( fname = cfg.PICK_OTUS_OUT_DIR + '/otu_table.dummy.lefse',
                                     lname = cfg.COLLATED_OUT_DIR + '/otu_table.lefse' )]
 
-
-    def get_core_microbiome_dirs(self ):
+    def get_core_microbiome_dirs( self ):
         l = list()
         if self.core_microbiome:
             files = glob.glob( cfg.COMPUTE_CORE_MICROBIOME_OUT_DIR + '*')
@@ -564,6 +575,12 @@ class Config:
                 l.append ( File_to_link_name( fname = f, lname = cfg.COLLATED_OUT_DIR) )
         return l
     
+    def get_phyloseq_images( self ):
+        l = list()
+        files = glob.glob( cfg.PHYLOSEQ_IMAGES_DIR + '*')
+        for f in files:
+            l.append ( File_to_link_name( fname = f, lname = cfg.COLLATED_OUT_DIR) )
+        return l
 
     def link_metastats_files( self ):
         l = list()
@@ -960,7 +977,7 @@ class Config:
                             + ' --max_bad_run_length=' + str(self.max_bad_run_length)
 
             if self.bc_file is not None:
-                split_lib_cmd += ' --barcode_type='+ str( self.barcode_type )\
+                split_lib_cmd += ' --barcode_type='+ str( self.bc_len )\
                                  + ' --barcode_read_fps=' + file_exists( cfg.JOINED_OUTS_OUT_DIR + '/fastqjoin.join_barcodes.fastq' )
                 if not self.bc_is_fwd:
                     split_lib_cmd += ' --rev_comp_mapping_barcodes'            
@@ -978,6 +995,8 @@ class Config:
             return file_exists( cfg.SPLIT_LIB_OUT_DIR + '/seqs.fna' )
         
     def gen_closed_reference_otus_cmd( self ):
+                          # + ' --parallel'\
+                          # + ' --jobs_to_start='+ str(get_num_cpus() / 4) \
         if self.analysis_type == 'CLOSED_REFERENCE':            
             self.cmds = [ "pick_closed_reference_otus.py "\
                           + " -i " + self.get_input_seqs() \
@@ -985,8 +1004,6 @@ class Config:
                           + ' --reference_fp=' + file_exists( self.ref_fasta_file )\
                           + ' --taxonomy_fp=' + file_exists( self.ref_taxonomy_file )\
                           + ' --parameter_fp=' + file_exists( self.otus_params_file )\
-                          + ' --parallel'\
-                          + ' --jobs_to_start='+ str(get_num_cpus() / 4) \
                           + ' --force' ]
         return self
         
@@ -1002,19 +1019,21 @@ class Config:
         return self
 #hard coding db for now
     def gen_open_reference_otus_ITS_cmd( self ): 
+#                          + ' --parallel' \
+#                          + ' --jobs_to_start='+ str(get_num_cpus() / 4)  ] # to do with low RAM
         if self.analysis_type == 'OPEN_REFERENCE_ITS':
             self.cmds = [ 'pick_open_reference_otus.py '\
                           + ' -i ' +  self.get_input_seqs() \
                           + ' -o ' + cfg.PICK_OTUS_OUT_DIR \
                           + ' -r ' + file_exists( self.ref_fasta_file ) \
                           + ' --parameter_fp=' + file_exists( self.otus_params_file )\
-                          + ' --parallel' \
                           + ' --force' \
-                          + ' --suppress_align_and_tree' \
-                          + ' --jobs_to_start='+ str(get_num_cpus() / 4)  ] # to do with low RAM
+                          + ' --suppress_align_and_tree'    ]
         return self
 
     def gen_open_reference_otus_cmd( self ): 
+#                          + ' --parallel' \
+#                          + ' --jobs_to_start='+ str(get_num_cpus() / 4)  ] # to do with low RAM
         if self.analysis_type == 'OPEN_REFERENCE':
             self.cmds = [ 'pick_open_reference_otus.py '\
                           + ' -i ' +  self.get_input_seqs() \
@@ -1022,9 +1041,7 @@ class Config:
                           + ' -r ' + file_exists( self.ref_fasta_file )\
                           + ' --otu_picking_method uclust ' \
                           + ' --parameter_fp=' + file_exists( self.otus_params_file )\
-                          + ' --parallel' \
-                          + ' --force' \
-                          + ' --jobs_to_start='+ str(get_num_cpus() / 4)  ] # to do with low RAM
+                          + ' --force' ]
         return self
     
     def gen_jacknifed_beta_div ( self, depth ):
