@@ -3,15 +3,18 @@ import json
 import zipfile
 import os
 import csv
-import openpyxl
-
+#import openpyxl
+import xlrd
 import logging
 import multiprocessing
 import sys
-from sh import head, mv, cp, mkdir, glob, zip, unzip, gunzip
+from sh import head, mv, cp, mkdir, glob, zip, unzip, gunzip, grep, wget, tar
 import tarfile
 import subprocess
+import shlex
+import shutil
 from collections import namedtuple
+import neph_errors
 
 # ref
 # reference
@@ -48,7 +51,7 @@ class Cfg:
     GOOD_CONTIGS_ALIGN_OUTPUT = BASE + '.trim.contigs.good.unique.align'
     GOOD_UNIQUE_SUMMARY = BASE + '.trim.contigs.good.unique.summary'
     FRST_K_SMRY = 'first_K_summary.txt' # formerly : start-end.txt
-    _HOME_DIR = '/home/ubuntu/'
+    _HOME_DIR = '/mnt/disk1/'
 
     SCREEN_GOOD_UNIQ_COUNT_TABLE = BASE + '.trim.contigs.good.good.count_table'
     SCREEN_GOOD_UNIQ_ALIGN = BASE + '.trim.contigs.good.unique.good.align'
@@ -87,6 +90,7 @@ class Cfg:
     FINAL_OTU_GRPS_SMMRY = 'final.otu.groups.summary'
     FINAL_BIOM = 'final.otu.0.03.biom'
     FINAL_BIOM_SHARED = 'final.otu.0.03.biom_shared'
+    FINAL_OTU_FIXED = 'final.otu.0.03.tax.table.txt'
 
     FINAL_TX_SABUND = 'final.tx.sabund'
     FINAL_TX_RABUND  = 'final.tx.rabund'
@@ -121,24 +125,27 @@ class Cfg:
     
     FILTER_GOOD_UNIQUE = BASE + '.trim.contigs.good.unique.good.filter.fasta'
   
-## SILVA DB CFG  
-    _SILVA_ROOT = _HOME_DIR + 'ref_dbs/silva/'
-    SILVA_FASTA = _SILVA_ROOT + 'silva.full_v123.fasta'
+## SILVA DB CFG 
+    DB_S3_NAME = 'mothur_PE_ref.tar.gz' 
+
+    _SILVA_ROOT = 'mothur_PE_ref_dbs/'
+#    SILVA_FASTA = _SILVA_ROOT + 'silva.full_v123.fasta'
+    SILVA_ALIGN = _SILVA_ROOT + 'silva.nr_v123.align'
     SILVA_SEED_ALIGN = _SILVA_ROOT + 'SILVA_SEED.v123.fasta'
     SILVA_SEED_TAX = _SILVA_ROOT + 'silva.seed_v123.tax'
     SILVA_TAX = _SILVA_ROOT + 'silva.nr_v123.tax'
-    SILVA_V4 = _SILVA_ROOT + 'silva.v4.fasta'
+#    SILVA_V4 = _SILVA_ROOT + 'silva.v4.fasta'
     SILVA_PCR_OUT_FNAME = _SILVA_ROOT + 'SILVA_SEED.v123.pcr.fasta'
     SILVA_CLASSIFY_SEQS = BASE\
-            + '.trim.contigs.good.unique.good.filter.unique.precluster.pick.seed_v123.wang.taxonomy'
+            + '.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v123.wang.taxonomy'
     SILVA_CLASSIFY_SEQS_SMRY = BASE\
-            + '.trim.contigs.good.unique.good.filter.unique.precluster.pick.seed_v123.wang.taxonomy.summary'
-    SILVA_RM_LINEAGE_TAX = RM_LINEAGE_TAX_BASE + '.seed_v123.wang.pick.taxonomy'
-    SILVA_RM_LINEAGE_TAX_PICK = RM_LINEAGE_TAX_PICK_BASE + '.seed_v123.wang.pick.pick.taxonomy'
+            + '.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v123.wang.taxonomy.summary'
+    SILVA_RM_LINEAGE_TAX = RM_LINEAGE_TAX_BASE + '.nr_v123.wang.pick.taxonomy'
+    SILVA_RM_LINEAGE_TAX_PICK = RM_LINEAGE_TAX_PICK_BASE + '.nr_v123.wang.pick.pick.taxonomy'
 
 ## GreenGenes DB CFG
-    _GG_ROOT = _HOME_DIR + 'ref_dbs/gg_13_8_otus/'
-    GG_FASTA = _HOME_DIR + 'ref_dbs/rep_set_aligned/99_otus.fasta'
+    _GG_ROOT = 'mothur_PE_ref_dbs/'
+    GG_FASTA = _GG_ROOT + '99_otus.fasta'
     GG_TAX = _GG_ROOT + 'gg_13_8_99.gg.tax'
     GG_PCR_OUT_FNAME = _HOME_DIR + 'ref_dbs/rep_set_aligned/99_otus.pcr.fasta'
     GG_CLASSIFY_SEQS = BASE\
@@ -155,15 +162,35 @@ class Cfg:
     SORTED_BIOM = 'final.otu.0.03.sorted.biom'
     OTU_HEATMAP_OUT_DIR = 'OTU_Heatmap'
     OTU_Heatmap = 'heatmap.svg'
+    STD_META = 'TreatmentGroup'
     
+    PICRUST_L3_PARAMS = 'qiime_params_picrust3.txt'
+    PICRUST_L2_PARAMS = 'qiime_params_picrust2.txt'
+    PICRUST_CONS_TAX = 'final.picrust.cons.taxonomy'
+    PICRUST_SHARED = 'picrust.shared'
+    PICRUST_BAD_BIOM = 'picrust.0.03.biom'
+    PICRUST_GOOD_BIOM = 'picrust.biom'
+    PICRUST_GOOD_OTU_TABLE = 'picrust.biom.txt'
+    PICRUST_NORM_OTUS = 'normalized_otus.biom'
+    PICRUST_META = 'metagenome_predictions.biom'
+    PICRUST_L2_FUNCTIONS_BIOM = 'predicted_metagenomes.L2.biom'
+    PICRUST_L3_FUNCTIONS_BIOM = 'predicted_metagenomes.L3.biom'
+    PICRUST_L2_FUNCTIONS_TABLE = 'predicted_metagenomes.L2.txt'
+    PICRUST_L3_FUNCTIONS_TABLE = 'predicted_metagenomes.L3.txt'
+    PICRUST_L2_DIR = 'picrust_at_lvl2'
+    PICRUST_L3_DIR = 'picrust_at_lvl3'
+    PICRUST_OTU_REF_MAP = '99_otu_map.txt'
+
     CORE_DIV_OUT_DIR = 'core_diversity'
+    CD_PARAMS_FILE = 'otus_params.txt'
     TREES_DIR = 'trees'
     BIOM_DIR = 'biom_files'
     METASTATS_DIR = 'metastats'
     METASTATS_OUT = 'metastats'
     COLLATED_OUTS = 'nephele_outputs'
-    
-    DEPTH_SCALER = 0.1
+
+    DEPTH_SCALER = 0.2
+
     CLASSIFY_SEQS_CUTOFF = 80
     POINT_ZERO_THREE_LABL = '0.03'
     DESIGN_FILE = 'design_file'
@@ -172,14 +199,23 @@ class Cfg:
     MAXAMBIG = 0
     MIN_NUM_SAMPLES_FOR_CD = 2  # this number of below => no core diversity run
     LOG_FILE_NAME = 'logfile.txt'
-    
+    MIN_SEQ_LEN = 100
+
 def ensure_file_format_is_ok( fname ):
     # this sorts nasty CRLF chars
-    with open(fname, 'rU') as infile:
-        text = infile.read()  # Automatic ("Universal read") conversion of newlines to "\n"
+    with open(fname, 'r', newline='\n', encoding="utf-8") as infile:
+        text = infile.read()
     with open(fname, 'w') as outfile:
         outfile.write(text)
     return fname
+
+def get_reference_DBs( dbs ):
+    fname = 'https://s3.amazonaws.com/nephele2-ref-dbs/' + dbs
+    if not os.path.isfile(os.path.basename(fname)):
+        wget(fname)
+        archive = tarfile.open(dbs, 'r:gz')
+        archive.extractall('.')
+    return dbs
     
 def read_mm_csv( fname ):
     # read in our own special flavour of CSV file and hash
@@ -202,12 +238,12 @@ def redir_out( cmd, out_fname ):
     return cmd + " > " + out_fname
 
 def exec_cmnd( cmds ):
-    if cmds is None: return
-    
+    if cmds is None:
+        return
     if isinstance(cmds, str):
         l = list()
         l.append( cmds )
-        cmds = l        
+        cmds = l
     while len(cmds) > 0:
         cmd = cmds.pop()
         log.info( cmd )
@@ -215,34 +251,43 @@ def exec_cmnd( cmds ):
             if cmd.startswith('mothur'): # this might not be needed
                 os.system(cmd)
             else:
-                e = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
+                args = shlex.split(cmd)
+                e = subprocess.check_output(args, stderr=subprocess.STDOUT)
                 if len(e) > 0:
-                    print(e)
+                    log.error(e)
         except subprocess.CalledProcessError as cpe:
             out_bytes = cpe.output       # Output generated before error
 
+def mean_seq_len_lt( min_len=None, summary_file=None ):
+    # is the avg seq len lt min_len?
+    with open(summary_file, 'r', newline='') as f:
+        reader = csv.DictReader(f, delimiter='\t')
+        if 'nbases' not in reader.fieldnames:
+            return False
+        all_lens = [ int(row['nbases']) for row in reader ]
+    return sum(all_lens) / len(all_lens) < min_len
 
 def ensure_file_is_csv( fname ):
     fname_no_ext, ext = os.path.splitext( fname )
     if ext.lower() == '.csv' or ext.lower() == '.txt' or ext.lower() == '.mapping':
         return fname
     elif ext.lower() == '.xlsx' or ext.lower() == '.xls':
-        wb = openpyxl.load_workbook( fname )
-        ws = wb.active
         csv_fname = fname_no_ext + '.csv'
+        wb = xlrd.open_workbook( fname )
+        sheet = wb.sheet_by_index(0)
         with open(csv_fname, 'w') as f:
             c = csv.writer(f, delimiter='\t', quoting=csv.QUOTE_NONE)
-            for r in ws.rows:
-                c.writerow([cell.value for cell in r])
+            for rownum in range(sheet.nrows):
+                c.writerow(sheet.row_values(rownum))
         return csv_fname
     else:
-        log.error('Unable to deal with file {0}.'.format(fname))
+        log.error(neph_errors.BAD_FILE_TYPE)
         do_end_operations()
         exit(1)
 
 def ignore_mac_osx_files( files):
     ret = list()
-    for	f in files:
+    for f in files:
         if '__MACOSX' not in f:
             ret.append(f)
     return ret
@@ -255,36 +300,30 @@ def unzip_and_junk_path(fname):
     return files_unzipped
 
 def unzip_input_file( fname ):
+    front, ext = os.path.splitext( fname )
     if zipfile.is_zipfile(fname):
         files = unzip_and_junk_path(fname)
-    for f in files:
-        if f.endswith('.gz'):
-            gunzip(f)
+        # sometimes the zip is a collection of gz files
+        for f in files:
+            if f.endswith('.gz'):
+                gunzip(f)
+    elif tarfile.is_tarfile(fname):
+        if ext == '.gz':
+            gunzip(fname)
+            fname = front
+            front, ext = os.path.splitext( fname )
+        if ext == '.tgz':
+            tar('-xzf', fname)
+            tar('-xzf', fname, '--strip-components=1')
+            tar('-xzf', fname, '--strip-components=2')
+        elif ext == '.tar':
+            tar('-xf', fname, '--strip-components=1')
+            tar('-xf', fname, '--strip-components=2')
+    elif ext == '.gz':
+        gunzip(fname)
+    else:
+        log.info( fname + ' is not a zipfile.')
 
-
-    # this fails if there is some kind of dir structure:
-        # with zipfile.ZipFile( fname ) as zf:
-        #     files_unzipped = zf.namelist()
-        #     zf.extractall( path='.')
-    # return files_unzipped
-
-
-# def unzip_file( fname ):
-#     # check file exists
-#     # untar if needed
-#     # unzip if needed
-#     # return fnames
-#     files = list()
-#     if not os.path.isfile( fname ):
-#         Cfg.log.error('File: {0} does not exist!'.format( fname ))
-#         return files
-#     with zipfile.ZipFile( fname ) as zf:
-#         files = zf.namelist()        
-#     if tarfile.is_tarfile( fname ):
-#         t = tarfile.TarFile(name=fname, mode='r')
-#         files = t.getnames()
-#         print(files)
-        
 def mv_if_exists( source, dest ):
     if os.path.lexists( source ):
         mv( source, dest)
@@ -297,8 +336,8 @@ def cp_if_exists(f_to_cp, dest):
         cp( '-r', f_to_cp, dest)
     # else:
     #     Cfg.log.warn('Unable to cp {0}, does not exist in {1}'.format(f_to_cp, dest) )
-    
-def ensure_file_exists( outs ):    
+
+def ensure_file_exists( outs ):
     if isinstance(outs, str):
         l = list()
         l.append( outs )
@@ -307,7 +346,8 @@ def ensure_file_exists( outs ):
         if os.path.isfile(out):
             log.info('File {0} exists as expected.'.format(out) )
         else:
-            log.info('Unable to proceed: File {0} does not exist.'.format(out) )
+            log.error(neph_errors.NO_FILE_ERROR)
+            log.error('{0} does not exist.'.format(out) )
             do_end_operations()
             exit(1)
     return True
@@ -316,14 +356,14 @@ def prep_output_files():
     mkdir('-p', Cfg.COLLATED_OUTS) # -p = no error if existing, make parent directories as needed
     mkdir('-p', Cfg.TREES_DIR)
     mkdir('-p', Cfg.BIOM_DIR)
-    mkdir('-p', Cfg.OTU_HEATMAP_OUT_DIR)
+#    mkdir('-p', Cfg.OTU_HEATMAP_OUT_DIR)
 
     cp_if_exists( Cfg.TREE_SHARED_JCLASS, Cfg.TREES_DIR )
     cp_if_exists( Cfg.TREE_SHARED_THETAYC, Cfg.TREES_DIR )
     cp_if_exists( Cfg.FINAL_PHYLIP_TRE, Cfg.TREES_DIR )
     cp_if_exists( Cfg.TREE_PHYLOTYPE_JCLASS, Cfg.TREES_DIR )
     cp_if_exists( Cfg.TREE_PHYLOTYPE_THETAYC, Cfg.TREES_DIR )
-    mv_if_exists( Cfg.OTU_Heatmap, Cfg.OTU_HEATMAP_OUT_DIR )
+#   mv_if_exists( Cfg.OTU_Heatmap, Cfg.OTU_HEATMAP_OUT_DIR )
 
     cp_if_exists( Cfg.SORTED_BIOM, Cfg.BIOM_DIR )
     cp_if_exists( Cfg.OTU_BIOM_SUMMARY, Cfg.BIOM_DIR )
@@ -332,7 +372,7 @@ def prep_output_files():
 
     mv_if_exists( Cfg.BIOM_DIR, Cfg.COLLATED_OUTS )
     mv_if_exists( Cfg.TREES_DIR, Cfg.COLLATED_OUTS )
-    mv_if_exists( Cfg.OTU_HEATMAP_OUT_DIR, Cfg.COLLATED_OUTS )
+#   mv_if_exists( Cfg.OTU_HEATMAP_OUT_DIR, Cfg.COLLATED_OUTS )
     mv_if_exists( Cfg.CORE_DIV_OUT_DIR, Cfg.COLLATED_OUTS )
     mv_if_exists( Cfg.METASTATS_DIR, Cfg.COLLATED_OUTS )
 
@@ -344,6 +384,8 @@ def prep_output_files():
     cp_if_exists( Cfg.FINAL_FA, Cfg.COLLATED_OUTS )
     cp_if_exists( 'HMP_compare_results', Cfg.COLLATED_OUTS )
     cp_if_exists( 'taxa_plots_and_heatmaps', Cfg.COLLATED_OUTS )
+    cp_if_exists( 'PICRUSt_data', Cfg.COLLATED_OUTS )
+    cp_if_exists( 'runtime.txt', Cfg.COLLATED_OUTS)
 
     # cp *trim.unique.fasta Cfg.COLLATED_OUTS/
     # #cp -r *_with_HMPDACC_v13 Cfg.COLLATED_OUTS/ 
@@ -381,11 +423,14 @@ class Mothur_MiSeq_PE:
         for key, value in kwargs.items():
             if value == '': pass
             if key == 'INPUT_TYPE': self.input_type = value
-            elif key == 'RAW_FILE_FULL': self.raw_file_full = value                
-            elif key == "FRACTION_OF_MAXIMUM_SAMPLE_SIZE": self.fraction_of_maximum_sample_size = value
-            elif key == "MAP_FILE": self.map_file = ensure_file_is_csv(value)
+            elif key == 'RAW_FILE_FULL': self.raw_file_full = value
+            elif key == "FRACTION_OF_MAXIMUM_SAMPLE_SIZE":
+                self.fraction_of_maximum_sample_size = value
+            elif key == "MAP_FILE":
+                self.map_file = ensure_file_format_is_ok( (ensure_file_is_csv(value)) )
             elif key == "MAXLENGTH": self.maxlength = value
-            elif key == "READS_ZIP": self.reads_zip = value
+            elif key == "READS_ZIP" or key == 'FASTQ_FILE':
+                unzip_input_file( value )
             elif key == 'CRITERIA': self.criteria = value
             elif key == 'DIFFERENCE_RANK': self.difference_rank = value
             elif key == 'REFERENCE_DATABASE': self.reference_database = value
@@ -395,13 +440,14 @@ class Mothur_MiSeq_PE:
             elif key == 'MINFLOWS': self.minflows = value
             elif key == 'OPTIMIZE': self.optimize = value
             elif key == 'DATABASE': self.database = value
+            elif key == 'PICRUST': self.picrust = value
             # HMP STARTS HERE
             elif key == 'COMP_WITH_DACC': 
                 if value.upper() not in True_false_dict:
                     log.info('Value for COMP_WITH_DACC not valid.'.format(value) )
                     do_end_operations()
                     exit(1)
-                else:    
+                else:
                     self.comp_with_dacc = True_false_dict[value.upper()]
             elif key == 'BODY_SITE': self.body_site = value
             elif key == 'REGION_DACC': self.region_dacc = value
@@ -409,9 +455,8 @@ class Mothur_MiSeq_PE:
             elif key == 'NEAREST_N_SAMPLES': self.nearest_n_samples = value
             # HMP ENDS HERE
             else:
-                log.warn('Not sure what to do with param {0}, set to {1}; ignoring.'.format(key, value))
+                log.debug('Not sure what to do with param {0}, set to {1}; ignoring.'.format(key, value))
         
-        unzip_input_file(self.reads_zip)
         self.samples = self.load_samples_from_map( self.map_file )
 
     def gen_compare_to_HMP_cmd( self ):
@@ -431,6 +476,8 @@ class Mothur_MiSeq_PE:
         samples = list()        
         reader = csv.DictReader( open(fname), delimiter='\t' )
         for row in reader:
+            if row['#SampleID'] == '':
+                continue
             ensure_file_exists( row['ForwardFastqFile'] )
             ensure_file_exists( row['ReverseFastqFile'] )
             s = Sample( row['#SampleID'],
@@ -443,7 +490,8 @@ class Mothur_MiSeq_PE:
             samples.append( s )
                 
         if len( samples  ) == 0:
-            log.error('Unable to proceed, no samples in mapping file {0}.'.format (fname) )
+            log.error(neph_errors.NO_SAMPLES_IN_MAPPING_FILE)
+            #log.error('Unable to proceed, no samples in mapping file {0}.'.format (fname) )
             do_end_operations()
             exit(1)
         return samples
@@ -546,7 +594,8 @@ class Mothur_MiSeq_PE:
                     if len(a) > 3:
                         return a[1],a[2]
                     else:
-                        log.error("The Output of summary.seqs seems to be wrong")
+                        log.error(neph_errors.SUMMARY_SEQS_ERROR)
+                        #log.error("The Output of summary.seqs seems to be wrong")
     @staticmethod
     def gen_pcr_seqs_cmnd(start, end):
         # gens PCR_OUT_FNAME        
@@ -609,7 +658,8 @@ class Mothur_MiSeq_PE:
                                            'reference=' + reference,
                                            'taxonomy=' + taxonomy,
                                            'cutoff=' + str(Cfg.CLASSIFY_SEQS_CUTOFF),
-                                           'probs=f'] )
+                                           'probs=f',
+                                           'processors=' + str(multiprocessing.cpu_count()) ])
     @staticmethod
     def gen_rm_lineage_cmd( fasta, counts_file, taxonomy ):
         # gens
@@ -658,24 +708,31 @@ class Mothur_MiSeq_PE:
 # count=stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.pick.count_table,
 # taxonomy=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.taxonomy,
 # label=0.03)
+
     @staticmethod
-    def gen_classify_otus_cmd( list_file, counts_file, tax, label=None, ref_taxonomy=None):
-        if ref_taxonomy is not None:
-            # generates:
-            # final.an.unique_list.0.03.cons.taxonomy
-            # final.an.unique_list.0.03.cons.tax.summary
-            return mothurize( 'classify.otu', ['list=' + list_file,
-                                               'count=' + counts_file,
-                                               'taxonomy=' + tax,
-                                               'label=' + Cfg.POINT_ZERO_THREE_LABL,
-                                               'reftaxonomy=' + ref_taxonomy])
-        else:
-            # final.tx.1.cons.taxonomy
-            # final.tx.1.cons.tax.summary
-            return mothurize( 'classify.otu', ['list=' + list_file,
-                                               'count=' + counts_file,
-                                               'taxonomy=' + tax,
-                                               'label=' + label] )
+    def gen_classify_otus_cmd( list_file, counts_file, tax, label=None):
+        return mothurize( 'classify.otu', ['list=' + list_file,
+                                           'count=' + counts_file,
+                                           'taxonomy=' + tax,
+                                           'label=' + Cfg.POINT_ZERO_THREE_LABL] )    
+
+    # def gen_classify_otus_cmd( list_file, counts_file, tax, label=None, ref_taxonomy=None):
+    #     if ref_taxonomy is not None:
+    #         # generates:
+    #         # final.an.unique_list.0.03.cons.taxonomy
+    #         # final.an.unique_list.0.03.cons.tax.summary
+    #         return mothurize( 'classify.otu', ['list=' + list_file,
+    #                                            'count=' + counts_file,
+    #                                            'taxonomy=' + tax,
+    #                                            'label=' + Cfg.POINT_ZERO_THREE_LABL,
+    #                                            'reftaxonomy=' + ref_taxonomy])
+    #     else:
+    #         # final.tx.1.cons.taxonomy
+    #         # final.tx.1.cons.tax.summary
+    #         return mothurize( 'classify.otu', ['list=' + list_file,
+    #                                            'count=' + counts_file,
+    #                                            'taxonomy=' + tax,
+    #                                            'label=' + label] )
     
 
     @staticmethod
@@ -794,6 +851,20 @@ class Mothur_MiSeq_PE:
                                         'method=abundance',
                                         'label=' + Cfg.POINT_ZERO_THREE_LABL ])
 
+    # @staticmethod
+    # def run_biom_convert_cmd( fname ):
+    #     # Seemingly Mothur v.1.38.1 produces malformed biom files.
+    #     # this attempts to convert them to something usable.        
+    #     exec_cmnd('biom convert '\
+    #               + ' --table-type="OTU table" '\
+    #               + ' -i ' + fname\
+    #               + ' -o ' + fname + '.tmp'\
+    #               + ' --to-tsv --header-key taxonomy' )
+    #     exec_cmnd('biom convert '\
+    #               + ' -i ' + fname + '.tmp'\
+    #               + ' -o ' + fname \
+    #               + ' --table-type="OTU table" --to-json --process-obs-metadata taxonomy' )
+
     @staticmethod
     def gen_biom_summarize_table(f_in, f_out):
         return 'biom summarize-table '\
@@ -809,17 +880,32 @@ class Mothur_MiSeq_PE:
             + ' --sort_field=' + sort_field
     
     @staticmethod
-    def lookup_max_depth_from_biom_summry( fname ):
-        max_depth = None
+    def lookup_median_depth_from_biom_summry( fname ):
+        median_depth = None
         with open( fname ) as f_in:
             for line in f_in:
-                if line.startswith(' Max:'):
-                    _, max_depth = line.strip().split(': ')
-        if max_depth is None:
-            log.error('No Max depth field was found in {0}, cannot compute depth.').format( fname )
+                if line.startswith(' Median:'):
+                    _, median_depth = line.strip().split(': ')
+        if median_depth is None:
+            log.error(neph_errors.NO_DEPTH)
+            #log.error('No Max depth field was found in {0}, cannot compute depth.').format( fname )
             do_end_operations()
             exit(1)
-        return int(float(max_depth))
+        return int(float(median_depth))
+
+    @staticmethod
+    def lookup_min_depth_from_biom_summry( fname ):
+        min_depth = None
+        with open( fname ) as f_in:
+            for line in f_in:
+                if line.startswith(' Min:'):
+                    _, min_depth = line.strip().split(': ')
+        if min_depth is None:
+            log.error(neph_errors.NO_DEPTH)
+            #log.error('No Max depth field was found in {0}, cannot compute depth.').format( fname )
+            do_end_operations()
+            exit(1)
+        return int(float(min_depth))
 
     @staticmethod
     def gen_betterplots(input_biom_fp, map_file, rank):
@@ -837,7 +923,8 @@ class Mothur_MiSeq_PE:
             + ' --mapping_fp=' + map_file\
             + ' --nonphylogenetic_diversity'\
             + ' --categories=' + ','.join(treatment_groups)\
-            + ' --sampling_depth='+ str(depth)
+            + ' --sampling_depth='+ str(depth)\
+            + ' ----parameter_fp=' + Cfg.CD_PARAMS_FILE
 
     @staticmethod
     def lookup_tgs_from_map_file( fname ):
@@ -854,7 +941,8 @@ class Mothur_MiSeq_PE:
                         if seen_tg and col not in ( 'Description',  'ReversePrimer' ):
                             tgs.append(col)
         if len(tgs) == 0:
-            log.error('No TreatmentGroup column found in {0}. Exiting.').format(fname)
+            log.error(neph_errors.NO_TREATMENT_GROUP)
+            #log.error('No TreatmentGroup column found in {0}. Exiting.').format(fname)
             do_end_operations()
             exit(1)            
         return tgs
@@ -866,11 +954,56 @@ class Mothur_MiSeq_PE:
             + ' --imagetype=svg'\
             + ' -o ' + Cfg.OTU_Heatmap
 
-log = setup_logger()            # this is a bit scruffy. This is just a global. could be singleton?
-config_fname = sys.argv[1]
-input_dict = ''
+    @staticmethod
+    def picrust_biom_convert_to_table( biom, out_txt):
+        return 'biom convert '\
+            + ' --table-type="OTU table" '\
+            + ' -i ' + biom\
+            + ' -o ' + out_txt\
+            + ' --to-tsv --header-key taxonomy'
 
+    @staticmethod
+    def picrust_biom_convert_to_biom( otu_table, biom ):
+        return 'biom convert '\
+            + ' --table-type="OTU table" '\
+            + ' -i ' + otu_table\
+            + ' -o ' + biom\
+            + ' --to-json --process-obs-metadata taxonomy'
+
+    @staticmethod
+    def gen_norm_by_copy_num( biom, out_biom ):
+        return 'normalize_by_copy_number.py'\
+            + ' -i ' + biom\
+            + ' -o ' + out_biom
+
+    @staticmethod
+    def gen_predict_metagenomes( biom, meta_biom ):
+        return 'predict_metagenomes.py '\
+            + ' -i ' + biom\
+            + ' -o ' + meta_biom
+
+    @staticmethod
+    def gen_cat_by_function( biom, level, out_biom ):
+        return 'categorize_by_function.py '\
+            + ' -i ' + biom\
+            + ' -c "KEGG_Pathways" '\
+            + ' -l ' + level\
+            + ' -o ' + out_biom
+
+    @staticmethod
+    def gen_summarize_taxa_through_plots( biom, out_dir, parameters):
+        return 'summarize_taxa_through_plots.py '\
+            + ' -i ' + biom\
+            + ' -o ' + out_dir\
+            + ' -p ' + parameters
+
+input_dict = dict()
 if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print (neph_errors.NO_CONFIG_FILE)
+        exit(1)
+    config_fname = sys.argv[1]
+    log = setup_logger()
     if os.path.isfile( config_fname ):
         if config_fname.endswith( '.json' ):
             with open( config_fname ) as json_file:
@@ -879,6 +1012,13 @@ if __name__ == '__main__':
             input_dict = read_mm_csv(config_fname)
             
 pipe = Mothur_MiSeq_PE( input_dict ) 
+
+if pipe.picrust  == 'true':
+    if pipe.database != 'Greengenes':
+        log.info(neph_errors.PICRUST_GG_WARN)
+        pipe.database = 'Greengenes'
+
+get_reference_DBs( Cfg.DB_S3_NAME )
 
 pipe.gen_home_rolled_file_cmd( pipe.samples )
 ensure_file_exists( Cfg.MAKE_FILE_CMD_OUTPUT )
@@ -895,6 +1035,8 @@ ensure_file_exists( Cfg.GOOD_CONTIGS_FQ )
 exec_cmnd( pipe.gen_unique_seqs_cmd( Cfg.GOOD_CONTIGS_FQ) )
 ensure_file_exists( Cfg.UNIQUE_SEQS_OUT_NAMES )
 ensure_file_exists( Cfg.UNIQUE_SEQS_OUT_FA )
+
+
 
 # COMP TO HMP STUFF
 exec_cmnd( pipe.gen_compare_to_HMP_cmd( ) )
@@ -920,6 +1062,8 @@ exec_cmnd( pipe.gen_align_seqs_cmd( Cfg.UNIQUE_SEQS_OUT_FA, Cfg.CUSTOM_PCR_FILE_
 
 exec_cmnd( pipe.gen_summary_seqs_cmd( Cfg.GOOD_CONTIGS_ALIGN_OUTPUT, Cfg.COUNT_SEQS_OUT) )
 
+ensure_file_exists( Cfg.GOOD_CONTIGS_ALIGN_OUTPUT )
+
 exec_cmnd( pipe.gen_screen_seqs_cmd_w_opt_crit(fa = Cfg.GOOD_CONTIGS_ALIGN_OUTPUT,
                                                count = Cfg.COUNT_SEQS_OUT,
                                                summary = Cfg.GOOD_UNIQUE_SUMMARY,
@@ -929,6 +1073,12 @@ ensure_file_exists( [Cfg.SCREEN_GOOD_UNIQ_COUNT_TABLE,
                      Cfg.SCREEN_GOOD_UNIQ_ALIGN,
                      Cfg.SCREEN_GOOD_UNIQ_ACCNOS,
                      Cfg.SCREEN_GOOD_UNIQ_SUMMARY] )
+
+if mean_seq_len_lt( min_len=Cfg.MIN_SEQ_LEN, summary_file=Cfg.SCREEN_GOOD_UNIQ_SUMMARY ):
+    log.error(neph_errors.AVERAGE_LENGTH_TOO_LOW)
+    #log.error('\n\nAverage length is too low, unable to continue. Please adjust your parameters to allow for better overlap of PE reads or use the QIIME PE pipeline.\n\n')
+    do_end_operations()
+    exit(1)
 
 exec_cmnd( pipe.gen_filter_seqs( Cfg.SCREEN_GOOD_UNIQ_ALIGN ) )
 
@@ -952,8 +1102,8 @@ if pipe.database == 'Greengenes':
                                                                     Cfg.GG_TAX ) )
 else:
     exec_cmnd (pipe.gen_classify_seqs_cmd( Cfg.RM_ACCNOS, Cfg.UCHIME_COUNT_TABLE,
-                                                                    Cfg.SILVA_SEED_ALIGN, 
-                                                                    Cfg.SILVA_SEED_TAX ) )
+                                                                    Cfg.SILVA_ALIGN, 
+                                                                    Cfg.SILVA_TAX ) )
 
 #NEED IF STATMENT BASED UPON DB SELECTION 
 if pipe.database == 'Greengenes':
@@ -1007,17 +1157,9 @@ exec_cmnd( pipe.gen_metastats(Cfg.FINAL_OTU_SHARED, Cfg.DESIGN_FILE) )
 mkdir (Cfg.METASTATS_DIR)
 cp (glob('*.metastats'), Cfg.METASTATS_DIR)
 
-#NEED IF STATMENT BASED UPON DB SELECTION
-if pipe.database == 'Greengenes':
-    exec_cmnd( pipe.gen_classify_otus_cmd( list_file=Cfg.CLUST_SPLIT_OUT,
-                                           counts_file=Cfg.FINAL_COUNT,
-                                           tax=Cfg.FINAL_TAX,
-                                           ref_taxonomy= Cfg.GG_TAX) )
-else:
-    exec_cmnd( pipe.gen_classify_otus_cmd( list_file=Cfg.CLUST_SPLIT_OUT,
-                                           counts_file=Cfg.FINAL_COUNT,
-                                           tax=Cfg.FINAL_TAX,
-                                           ref_taxonomy= Cfg.SILVA_SEED_TAX) )   
+exec_cmnd( pipe.gen_classify_otus_cmd( list_file=Cfg.CLUST_SPLIT_OUT,
+                                       counts_file=Cfg.FINAL_COUNT,
+                                       tax=Cfg.FINAL_TAX ) )
 
 exec_cmnd( pipe.gen_tree_shared( Cfg.FINAL_OTU_SHARED ) )
 ensure_file_exists([Cfg.TREE_SHARED_JCLASS, Cfg.TREE_SHARED_THETAYC])
@@ -1081,20 +1223,64 @@ exec_cmnd( pipe.gen_otu_rep(Cfg.FINAL_COUNT, Cfg.FINAL_FA, Cfg.CLUST_SPLIT_OUT) 
 
 exec_cmnd( pipe.gen_biom_summarize_table( Cfg.FINAL_BIOM, Cfg.OTU_BIOM_SUMMARY) )
 
-exec_cmnd( pipe.gen_sort_otu_table(Cfg.FINAL_BIOM, pipe.map_file, 'TreatmentGroup') )
+# pipe.run_biom_convert_cmd( Cfg.FINAL_BIOM )
 
-taxa_levels = ["Phylum", "Class", "Order", "Family", "Genus"]
-for taxa in taxa_levels:
-    exec_cmnd( pipe.gen_betterplots( Cfg.SORTED_BIOM, pipe.map_file, taxa ))
+exec_cmnd( pipe.picrust_biom_convert_to_table( Cfg.FINAL_BIOM, Cfg.FINAL_OTU_FIXED ) )
+exec_cmnd( pipe.picrust_biom_convert_to_biom( Cfg.FINAL_OTU_FIXED, Cfg.FINAL_BIOM ) )
 
-depth = int( Cfg.DEPTH_SCALER * pipe.lookup_max_depth_from_biom_summry( Cfg.OTU_BIOM_SUMMARY ) )
+exec_cmnd( pipe.gen_sort_otu_table(Cfg.FINAL_BIOM, pipe.map_file, Cfg.STD_META) )
+
+med_depth = int( Cfg.DEPTH_SCALER * pipe.lookup_median_depth_from_biom_summry( Cfg.OTU_BIOM_SUMMARY ) )
+min_depth = int(pipe.lookup_min_depth_from_biom_summry( Cfg.OTU_BIOM_SUMMARY ) )
+if min_depth > med_depth:
+    depth = min_depth - 1
+else:
+    depth = med_depth
+     
 all_tgs = pipe.lookup_tgs_from_map_file( pipe.map_file )
 
 if len(pipe.samples) > Cfg.MIN_NUM_SAMPLES_FOR_CD:
-    exec_cmnd( pipe.gen_core_diversity_analysis( Cfg.SORTED_BIOM, pipe.map_file, all_tgs, depth ))
+    exec_cmnd( pipe.gen_core_diversity_analysis( Cfg.SORTED_BIOM, pipe.map_file, all_tgs, str( depth ) ))
 else:
-    log.info('Due to there being only {0} samples listed core diversity analysis cannot be performed\n'
-             .format(len(pipe.samples)))
+    log.info(neph_errors.NOT_ENOUGH_SAMPLES_CD)
+    #log.info('Due to there being only {0} samples listed core diversity analysis cannot be performed\n'
+    #         .format(len(pipe.samples)))
 #exec_cmnd( pipe.gen_otu_heatmap_cmd (Cfg.SORTED_BIOM) )
+
+#adding picrust steps here before plotting
+if pipe.picrust == 'true':
+    # cat Cfg.CLASSIFY_OTUS_TAX | grep -v 'k__Bacteria_unclassified' > Cfg.PICRUST_CONS_TAX
+    # cp Cfg.MAKE_SHARED_OUT Cfg.PICRUST_SHARED
+    # mkdir -p PICRUSt_data
+    grep(  '-v', 'k__Bacteria_unclassified', Cfg.CLASSIFY_OTUS_TAX, _out=Cfg.PICRUST_CONS_TAX )
+    cp( Cfg.MAKE_SHARED_OUT, Cfg.PICRUST_SHARED)
+    mkdir('-p', 'PICRUSt_data')
+    exec_cmnd( pipe.gen_make_biom( Cfg.PICRUST_SHARED, Cfg.PICRUST_CONS_TAX, Cfg.PICRUST_OTU_REF_MAP, Cfg.GG_TAX ) )
+    exec_cmnd( pipe.picrust_biom_convert_to_table( Cfg.PICRUST_BAD_BIOM, Cfg.PICRUST_GOOD_OTU_TABLE ) )
+    exec_cmnd( pipe.picrust_biom_convert_to_biom( Cfg.PICRUST_GOOD_OTU_TABLE, Cfg.PICRUST_GOOD_BIOM ) )
+    exec_cmnd( pipe.gen_norm_by_copy_num( Cfg.PICRUST_GOOD_BIOM, Cfg.PICRUST_NORM_OTUS ) )
+    exec_cmnd( pipe.gen_predict_metagenomes( Cfg.PICRUST_NORM_OTUS, Cfg.PICRUST_META ) )
+    exec_cmnd( pipe.gen_cat_by_function( Cfg.PICRUST_META, '2', Cfg.PICRUST_L2_FUNCTIONS_BIOM ) )
+    exec_cmnd( pipe.gen_cat_by_function( Cfg.PICRUST_META, '3', Cfg.PICRUST_L3_FUNCTIONS_BIOM ) )
+    exec_cmnd( pipe.gen_cat_by_function( Cfg.PICRUST_META, '2', Cfg.PICRUST_L2_FUNCTIONS_TABLE ) )
+    exec_cmnd( pipe.gen_cat_by_function( Cfg.PICRUST_META, '3', Cfg.PICRUST_L3_FUNCTIONS_TABLE ) ) 
+    exec_cmnd( pipe.gen_summarize_taxa_through_plots( Cfg.PICRUST_L2_FUNCTIONS_BIOM, Cfg.PICRUST_L2_DIR, Cfg.PICRUST_L2_PARAMS ) ) 
+    exec_cmnd( pipe.gen_summarize_taxa_through_plots( Cfg.PICRUST_L3_FUNCTIONS_BIOM, Cfg.PICRUST_L3_DIR, Cfg.PICRUST_L3_PARAMS ) )
+    cp_if_exists( Cfg.PICRUST_L2_DIR, 'PICRUSt_data')
+    cp_if_exists( Cfg.PICRUST_L3_DIR, 'PICRUSt_data')
+    cp_if_exists( Cfg.PICRUST_META, 'PICRUSt_data')
+    cp_if_exists( Cfg.PICRUST_GOOD_BIOM, 'PICRUSt_data')
+    cp_if_exists( Cfg.PICRUST_NORM_OTUS, 'PICRUSt_data')
+    cp_if_exists( Cfg.PICRUST_L2_FUNCTIONS_BIOM, 'PICRUSt_data')
+    cp_if_exists( Cfg.PICRUST_L3_FUNCTIONS_BIOM, 'PICRUSt_data')
+
+
+
+taxa_levels = ["Phylum", "Class", "Order", "Family", "Genus"]
+if pipe.database == 'Greengenes':
+    taxa_levels = ["Phylum", "Class", "Order", "Family", "Genus", "Species"]
+for taxa in taxa_levels:
+    exec_cmnd( pipe.gen_betterplots( Cfg.SORTED_BIOM, pipe.map_file, taxa ))
+
 do_end_operations()
 exit(0)
