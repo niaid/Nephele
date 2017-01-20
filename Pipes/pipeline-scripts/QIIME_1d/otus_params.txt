@@ -1,2 +1,3 @@
 pick_otus:enable_rev_strand_match True
 summarize_taxa:absolute_abundance True
+make_distance_boxplots:num_permutations 0
