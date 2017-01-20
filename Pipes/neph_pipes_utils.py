@@ -4,7 +4,7 @@ import os, re, json, glob
 from subprocess import call
 import cfg
 from common_utils import *
-from sh import mkdir, rm, mv, tar, gunzip, java, guess_fq_score_type
+from sh import mkdir, rm, mv, tar, gunzip, java, guess_fq_score_type, wget, unzip, cp
 # sh.glob returns a str not an empty arr if no files found
 import zipfile
 import tarfile
@@ -12,7 +12,12 @@ from collections import namedtuple, deque
 import warnings
 from decimal import *
 import subprocess
+import shlex
 import logging
+import neph_errors
+import xlrd
+import csv
+import multiprocessing
 
 File_to_link_name = namedtuple('File_to_link_name', 'fname lname')
 
@@ -56,12 +61,54 @@ def push_results_to_aws():
         return '/usr/local/bin/aws s3 cp ' + f + ' ' + dest
             #cfg.aws_cp_s3( f, dest )
 
+
+def ignore_mac_osx_files( files):
+    ret = list()
+    for f in files:
+        if '__MACOSX' not in f:
+            ret.append(f)
+    return ret
+
+def unzip_and_junk_path(fname):
+    files_unzipped = list()
+    with zipfile.ZipFile( fname ) as zf:
+        files_unzipped = [os.path.basename(f) for f in ignore_mac_osx_files(zf.namelist())]
+        unzip('-jo', fname)     # -o is overwrite
+    return files_unzipped
+
+def unzip_input_file( fname ):
+    if zipfile.is_zipfile(fname):
+        files = unzip_and_junk_path(fname)
+    for f in files:
+        if f.endswith('.gz'):
+            gunzip('-f', f)
+
+def ensure_file_is_csv( fname ):
+    fname_no_ext, ext = os.path.splitext( fname )
+    if ext.lower() == '.csv' or ext.lower() == '.txt' or ext.lower() == '.mapping':
+        return fname
+    elif ext.lower() == '.xlsx' or ext.lower() == '.xls':
+        csv_fname = fname_no_ext + '.csv'
+        wb = xlrd.open_workbook( fname )
+        sheet = wb.sheet_by_index(0)
+        with open(csv_fname, 'w') as f:
+            c = csv.writer(f, delimiter='\t', quoting=csv.QUOTE_NONE)
+            for rownum in range(sheet.nrows):
+                c.writerow(sheet.row_values(rownum))
+        return csv_fname        
+    else:
+        log.error(neph_errors.BAD_FILE_TYPE)
+        #log.error('Unable to deal with file {0}.'.format(fname))
+        do_end_operations()
+        exit(1)
+
                 
 def fix_EOL_char ( fname ):
     log = logging.getLogger('Base')
     log.info('checking EOL on ' + fname)
     if not os.path.isfile(fname):
-        log.error ("Non existent file: " + fname)
+        log.error(neph_errors.NO_FILE_ERROR)
+        log.error (" " + fname)
     if fname.endswith('.sff') or fname.endswith('.qual'):
         return fname
     with open(fname, 'rU') as infile:
@@ -70,15 +117,12 @@ def fix_EOL_char ( fname ):
         outfile.write(text)
     return fname
 
-def get_num_cpus():
-    return int( syscall('cat /proc/cpuinfo  | grep processor | wc -l') )
-
 def get_mem():
     return int( syscall("cat /proc/meminfo | grep MemTotal | awk '{ print $2 }'") )
 
 def exec_cmnd( cmds, log ):
-    if cmds is None: return
-    
+    if cmds is None:
+        return    
     if isinstance(cmds, str):
         l = list()
         l.append( cmds )
@@ -90,7 +134,8 @@ def exec_cmnd( cmds, log ):
             if cmd.startswith('mothur'): # this might not be needed
                 os.system(cmd)
             else:
-                e = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
+                args = shlex.split(cmd)
+                e = subprocess.check_output(args, stderr=subprocess.STDOUT)
                 if len(e) > 0:
                     print(e)
         except subprocess.CalledProcessError as cpe:
@@ -125,6 +170,16 @@ def mothurize ( func_name, args ):
 #               sample.fwd_fq_file, sample.fwd_fq_file + '.err',
 # 	      'TOPHRED64')
 
+
+def ensure_gt_1_cat_in_C_opts ( fname, putative_cats ):
+    import pandas
+    df = pandas.read_csv(fname, sep='\t')
+    l = list()
+    for cat in putative_cats:
+        if len(df[cat].unique()) > 1:
+            l.append(cat)
+    return l
+
 def get_C_opt_from_file( map_file ):
     # first C_OPT is going to always be TreatmentGroup
     # this is always going to be in a col named TreatmentGroup
@@ -133,52 +188,49 @@ def get_C_opt_from_file( map_file ):
     # Description is always the last col, and we always ignor it for this
     # ie we need everything between TG (col 6) and the last col -1
     # MCP-1137 fix for core diversity options
-    log = logging.getLogger('Base')    
+    # log = logging.getLogger('Base')    
     c_opts = list()
     with open (map_file) as f:
         for line in f:
             line_as_list = line.strip().split("\t")
-
             if line.startswith('#SampleID'):     # we only care about the header
                 line = line.rstrip()
                 line_as_list=line.split("\t")
                 if 'ReversePrimer' in line_as_list:
                     line_as_list.remove("ReversePrimer")
-
                 try : pos = line_as_list.index('TreatmentGroup')
                 except :
-                    log.error( 'There is no column named "TreatmentGroup"' )
+                    log.error(neph_errors.NO_TREATMENT_GROUP)
+                    #log.error( 'There is no column named "TreatmentGroup"' )
                     return 'TreatmentGroup'
                 total = len(line_as_list)
                 pos_des = line_as_list.index('Description')
                 for elt in line_as_list[pos:pos_des]:
                     c_opts.append(elt)
-
     if len(c_opts) > 0:
-        return ','.join(c_opts)
-    else:
-        return 'TreatmentGroup'
-   
+        return ','.join( ensure_gt_1_cat_in_C_opts( map_file, c_opts ) )
 
 class Config:
     # strings, named tuples, bools, ints, files, arrays of files, URLs
-    bool_fields = ['COMP_WITH_DACC', 'REVERSE_COMPLEMENT', 'CHIMERA', 'CORE_DIVERSITY_ANALYSES',
-                   'BOOTSTRAPPED_TREE', 'INTERACTIVE_OTU_HEATMAP', 'DIFFERENTIAL_OTU_ENRICHMENT',
-                   'BC_IS_FWD', 'FUNCTIONAL_ENRICHMENT', 'DEBUG', 'IS_DEMULTIPLEX', 'CORE_MICROBIOME']
+    bool_fields = ['COMP_WITH_DACC', 'REVERSE_COMPLEMENT', 'CHIMERA',
+                   'CORE_DIVERSITY_ANALYSES','BOOTSTRAPPED_TREE',
+                   'INTERACTIVE_OTU_HEATMAP', 'DIFFERENTIAL_OTU_ENRICHMENT',
+                   'BC_IS_FWD', 'FUNCTIONAL_ENRICHMENT', 'DEBUG', 'IS_DEMULTIPLEX',
+                   'CORE_MICROBIOME', 'PICRUST']
     # 'DISABLE_BARCODE_CORRECTION'
     int_fields = ['Q_PARAM', 'N_PARAM', 'BC_LEN', 'MIN_SEQ_LENGTH', 'MAX_AMBIGUOS',
                   'MAX_HOMOPOLYMER', 'MAX_PRIMER_MISMATCH', 'MAX_SEQ_LENGTH',
                   'MIN_QUAL_SCORE', 'QUALITY_SCORE_WINDOW', 'MAX_BAD_RUN_LENGTH', 
-                  'MIN_OVERLAP', 'PERC_MAX_DIFF']
+                  'MIN_OVERLAP', 'PERC_MAX_DIFF', 'NEAREST_N_SAMPLES']
     
     float_fields = ['FRACTION_OF_MAXIMUM_SAMPLE_SIZE', 'MAX_BARCODE_ERRORS']
     
     file_fields = ['REF_FASTA_FILE', 'REF_TAXONOMY_FILE', 'TREE_FILE', 'OTUS_PARAMS_FILE', 
-                   'LOG_FILE', 'MAP_FILE', 'FWD_FQ_FILE', 'REV_FQ_FILE', 'BC_FILE' , 'FASTQ_FILE',
-                   'RAW_FILE_FULL', 'FASTA_FILE', 'QUAL_FILE']
+                   'LOG_FILE', 'FWD_FQ_FILE', 'REV_FQ_FILE', 'BC_FILE' , 'FASTQ_FILE',
+                   'FASTA_FILE', 'QUAL_FILE']
     
     str_fields = ['AMI_ID', 'PIPELINENAME', 'EMAIL', 'USECODE', 'INSTANCETYPE',\
-                  'TEST_FILES']
+                  'TEST_FILES', 'HMP_DATABASE', 'REGION_DACC']
     
     VALID_INPUT_TYPE = ['MISEQ_MULTIPLEX', 'MISEQ_PAIR-END', 'FASTQ_SINGLE-END', 'RAW_SFF_FILE', 'FASTA_QUAL_FILES']
     
@@ -198,15 +250,42 @@ class Config:
     bc_file = None
     
     def __init__(self, kwargs):
-
         self.log = logging.getLogger('Base')
         self.warnings_log = logging.getLogger('warnings')
         self.cmds = list()
-        mkdir('-p', cfg.COLLATED_OUT_DIR)
-
-        for key, value in kwargs.iteritems():
+        mkdir( '-p', cfg.COLLATED_OUT_DIR )
+        for key in ['MAP_FILE', 'RAW_FILE_FULL', 'ANALYSIS_TYPE', 'PICRUST', 'INPUT_TYPE',
+                    'DATABASE', 'ERROR_CORR_PRIM_FORMATS', 'MIN_SEQ_LENGTH', 'MAX_AMBIGUOS',
+                    'MAX_HOMOPOLYMER', 'MAX_PRIMER_MISMATCH', 'MAX_BARCODE_ERRORS',
+                    'QUALITY_SCORE_WINDOW', 'MAX_SEQ_LENGTH', 'MIN_QUAL_SCORE', 'FASTA_FILE',
+                    'CORE_MICROBIOME', 'BODY_SITE', 'COMP_WITH_DACC', 'REVERSE_COMPLEMENT',
+                    'CHIMERA', 'CORE_DIVERSITY_ANALYSES','BOOTSTRAPPED_TREE',
+                    'INTERACTIVE_OTU_HEATMAP', 'DIFFERENTIAL_OTU_ENRICHMENT',
+                    'BC_IS_FWD', 'FUNCTIONAL_ENRICHMENT', 'IS_DEMULTIPLEX',                   
+                    'Q_PARAM', 'N_PARAM', 'BC_LEN', 'MAX_BAD_RUN_LENGTH', 
+                    'MIN_OVERLAP', 'PERC_MAX_DIFF', 'FRACTION_OF_MAXIMUM_SAMPLE_SIZE',
+                    'REF_FASTA_FILE', 'REF_TAXONOMY_FILE', 'TREE_FILE', 'OTUS_PARAMS_FILE', 
+                    'LOG_FILE', 'FWD_FQ_FILE', 'REV_FQ_FILE', 'BC_FILE' , 'FASTQ_FILE',
+                    'QUAL_FILE', 'HMP_DATABASE', 'NEAREST_N_SAMPLES', 'REGION_DACC' ]:
+            if key not in kwargs:
+                continue
+            value = kwargs[key]
             if value == '':
-                self.log.warn('{0} is being left unassigned'.format(key))
+                self.log.debug('{0} is being left unassigned'.format(key))
+            elif key.upper() == 'MAP_FILE':
+                if os.path.isfile(value):
+                    self.map_file = ensure_file_is_csv(value)
+                else:
+                    self.log.error(neph_errors.NO_FILE_ERROR)
+            elif key.upper() == 'RAW_FILE_FULL':
+                if os.path.isfile(value):
+                    filename, file_extension = os.path.splitext(value)
+                    if file_extension.upper() == '.SFF':
+                        self.raw_file_full = value
+                    elif file_extension.upper() == '.ZIP':
+                        if zipfile.is_zipfile(value):
+                            unzip_input_file(value)
+                        self.raw_file_full = strip_zip_ext(value)
             elif key.upper() in self.bool_fields:
                 if value.upper() in self.true_arr:
                     setattr(self, key.lower(), True)
@@ -215,7 +294,6 @@ class Config:
                 else:
                     raise Exception('"{0}" can only be assigned YES or NO, "{1}" is not permitted.'\
                                     .format(key, value))
-                    
             elif key in self.int_fields:
                 try:
                     setattr(self, key.lower(), int(value))
@@ -223,13 +301,13 @@ class Config:
                     self.log.error( "{0} can only be an Integer, {1} is not permitted.\nValueError."\
                         .format(key, value) )
                 except:
-                    self.log.error ('Unexpected error. "{0}:{1}"\n{3}'.format(key, value, sys.exc_info()[0]) )
+                    self.log.error ('Unexpected error. "{0}:{1}"\n{3}'.
+                                    format(key, value, sys.exc_info()[0]) )
                     raise
-                        
             elif key.upper() in self.str_fields:
                 setattr(self, key.lower(), value)
                 if value == '':
-                    warnings.warn('Warning: setting "{0}" to nothing'.format(key))
+                    warnings.debug('Warning: setting "{0}" to nothing'.format(key))
             elif key.upper() == 'INPUT_TYPE':
                 if value.upper() in self.VALID_INPUT_TYPE:
                     setattr(self, 'pipe_name', value.upper())
@@ -242,7 +320,6 @@ class Config:
                 else:
                     raise ValueError('{0} can only be one of the following:{1}. "{2}" not permitted.'\
                                      .format(key, ','.join( self.VALID_ANALYSIS_TYPE), value))
-
             elif key.upper() == 'BODY_SITE':
                 self.body_site = value
             elif key.upper() == 'REGION_DACC':
@@ -251,27 +328,21 @@ class Config:
                 self.nearest_n_samples = value
             elif key.upper() == 'HMP_DATABASE':
                 self.hmp_database = value
-
             elif key.upper() == 'DATABASE':
-                if value not in cfg.DB_V_TO_REF_TAXONOMY_FILE.keys():
+                if value not in cfg.HMP_REF_TAXONOMY_FILE.keys():
                     self.log.error('Only values Greengenes_94, Greengenes_97, Greengenes_99, SILVA_97, SILVA_99, ITS_97, ITS_99. Not: {0}'.format(value))
                     self.do_exit_operations()
                     exit(1)
                 else:
                     self.database = value
-                    self.ref_fasta_file = cfg.DB_V_TO_REF_FASTA_FILE[value]
-                    self.ref_taxonomy_file = cfg.DB_V_TO_REF_TAXONOMY_FILE[value]
-                    self.tree_file = cfg.DB_V_TO_TREE_FILE[value]
-
-#             elif key.upper() == 'BS_LIST':
-#                 values = value.split(':')
-#                 self.bs_list = list()
-#                 for v in values:
-#                     if v.upper() in self.VALID_BS_LIST:
-#                         self.bs_list.append(v.upper())
-#                     else:
-#                         raise ValueError('{0} can only be one of the following:{1}. "{2}" not permitted.'.format(key, v))
-
+                    self.ref_fasta_file = cfg.HMP_REF_FASTA_FILE[value]
+                    self.ref_taxonomy_file = cfg.HMP_REF_TAXONOMY_FILE[value]
+                    self.tree_file = cfg.HMP_TREE_FILE[value]
+            elif key.upper() == 'MAP_FILE':
+                if os.path.isfile(value):
+                    self.map_file = ensure_file_is_csv(value)
+                else:
+                    self.log.error(neph_errors.NO_FILE_ERROR)
             elif key.upper() == 'ERROR_CORR_PRIM_FORMATS':
                 if value == "Barcode length from mapping file":
                     setattr(self, 'barcode_type', str( get_bc_len_from_map_file( self.map_file ) ))
@@ -280,42 +351,42 @@ class Config:
                 else:
                     raise ValueError('{0} can only be one of the following:{1}. "{2}" not permitted.'\
                                      .format(key, ','.join( self.VALID_ERROR_CORR_PRIM_FORMATS), value))
+            elif key.upper() == 'READS_ZIP':
+                if os.path.isfile(value):
+                    unzip_input_file(value)                
             elif key.upper() in self.file_fields:
-                if not os.path.isfile(value):
-                    value = strip_zip_ext(value)
-                if not os.path.isfile(value):
-                    self.log.error('Unable to proceed, {0} does not exist! \
-                    Attempted to be assigned to {1}.'.format(value, key))
-                    self.do_exit_operations()
-                    exit(1)
-                if ' ' in value:
-                    os.rename(value, value.replace(' ', '-'))
-                    value = value.replace(' ', '-')
-                untarred_files = list()
-		if tarfile.is_tarfile(value):
-                    with tarfile.open(value, "r") as tar_f:
-                        untarred_files = tar_f.getnames()
-                        print 'setting ' + key.lower() + 'to'
-                        print untarred_files
-                        setattr(self, key.lower(), untarred_files )
-                    tar('xf', value)
-                    if len(untarred_files) > 0:
-                        for f in untarred_files:
-                            gunzip('--force', f)
-		else:
-                    setattr(self, key.lower(), fix_EOL_char(value) )
-
-                # if zipfile.is_zipfile(value):
-                #     fh = open(value, 'rb')
-                #     z = zipfile.ZipFile(fh)
-                #     for name in z.namelist():
-                #         outpath = "."
-                #         z.extract(name, outpath)
-                #         fix_EOL_char(name)
-                #     fh.close()
-                #     setattr(self, key.lower(), z.namelist() )
-                # setattr(self, key.lower(), fix_EOL_char(value) )                    
+                if os.path.isfile(value):
+                    filename, file_extension = os.path.splitext(value)
+                    if file_extension.upper() == '.ZIP':
+                        if zipfile.is_zipfile(value):
+                            unzip_input_file(value)
+                            setattr(self, key.lower(), strip_zip_ext(value) )
+                    else:
+                        setattr(self, key.lower(), value )
+                # if not os.path.isfile(value):
+                #     value = strip_zip_ext(value)
                     
+                # if not os.path.isfile(value):
+                #     self.log.error(neph_errors.NO_FILE_ERROR)
+                #     self.log.error('{0} does not exist.'.format(value))
+                #     self.do_exit_operations()
+                #     exit(1)
+                # if ' ' in value:
+                #     os.rename(value, value.replace(' ', '-'))
+                #     value = value.replace(' ', '-')
+                # if tarfile.is_tarfile(value):
+                #     untarred_files = list()
+                #     with tarfile.open(value, "r") as tar_f:
+                #         untarred_files = tar_f.getnames()
+                #         print('setting ' + key.lower() + 'to' + untarred_files )
+                #         setattr(self, key.lower(), untarred_files )
+                #     tar('xf', value)
+                #     if len(untarred_files) > 0:
+                #         for f in untarred_files:
+                #             gunzip('--force', f)
+                #     else:
+                #         setattr(self, key.lower(), fix_EOL_char(value) )
+                
             elif key.upper() in self.float_fields:
                 if key.upper() == 'FRACTION_OF_MAXIMUM_SAMPLE_SIZE':
                     if float( value ) >= 1:
@@ -331,11 +402,19 @@ class Config:
                 elif key.upper() == 'MAX_BARCODE_ERRORS':
                     self.max_barcode_errors = float( value )
             elif 'DEBUG' in kwargs and kwargs['DEBUG'] == 'YES':
-                warnings.warn('Warning, ignoring field {0} ({1})'.format(key, value))
-
+                warnings.debug('Warning, ignoring field {0} ({1})'.format(key, value))
+        
         # THIS IS POST / HARD WIRED / DEFAULTS
         # place for files 
-
+        
+        if self.analysis_type == 'OPEN_REFERENCE_ITS':
+            self.picrust = False
+        if self.picrust:
+            self.log.info(neph_errors.PICRUST_GG_WARN)
+            self.database = 'Greengenes_99'
+            self.ref_fasta_file = cfg.HMP_REF_FASTA_FILE[self.database]
+            self.ref_taxonomy_file = cfg.HMP_REF_TAXONOMY_FILE[self.database]
+            self.tree_file = cfg.HMP_TREE_FILE[self.database]
         if self.analysis_type == 'CLOSED_REFERENCE' or self.analysis_type == 'OPEN_REFERENCE_ITS':
             self.chimera = False
         elif not hasattr ( self, 'chimera' ):
@@ -348,9 +427,6 @@ class Config:
 
         self.samples = self.load_map_file()
 
-        # for sample in self.samples:            
-        #     convert_qual_scores_to_phred64( sample )
-
         self.has_overide_core_div = False        
         if self.pipe_name == 'MISEQ_PAIR-END':
             self.has_barcode=True
@@ -359,11 +435,11 @@ class Config:
         if not hasattr ( self, 'otus_params_file' ):
             self.otus_params_file = cfg.DEFAULT_OTU_PARAMS_FNAME
         if not hasattr ( self, 'log_file' ):
-            self.self.log_file = cfg.LOG_FILE
+            self.log_file = cfg.LOG_FILE
         for sw in cfg.QIIME_SW_VERS:
             self.log.info('Software Versions: ' +sw)
         self.do_run_core_div = True # init to true
-        self.log.info( "\n" + self.__repr__() )
+        #self.log.info( "\n" + self.__repr__() )
         self.log.info( 'Pipeline started' )
 
     
@@ -390,11 +466,13 @@ class Config:
                               + " --body_site=" + self.body_site\
                               + " --map_file=" + self.map_file\
                               + " --hmp_database=" + self.hmp_database\
-                              + " --nearest_n_samples=" + self.nearest_n_samples\
+                              + " --nearest_n_samples=" + str(self.nearest_n_samples)\
                               + " --region_dacc=" + self.region_dacc )
         return self
     def gen_phyloseq_images_cmd(self):
         taxa_levels = ["Phylum", "Class", "Order", "Family", "Genus"]
+        if self.database.upper() in ["GREENGENES_99" ,"GREENGENES_97"]:
+            taxa_levels = ["Phylum", "Class", "Order", "Family", "Genus", "Species"]
         for taxa in taxa_levels:
             self.cmds.append( 'Rscript betterplots.R '\
                                + " " + self.lookup_biom_file()\
@@ -406,14 +484,11 @@ class Config:
     def update_otus_params_file_for_ITS(self):
         if self.analysis_type == 'OPEN_REFERENCE_ITS':
             with open (self.otus_params_file, 'a') as f_out:
-                print >> f_out, 'assign_taxonomy:id_to_taxonomy_fp {0}'.format(self.ref_taxonomy_file)
-                print >> f_out, 'assign_taxonomy:reference_seqs_fp {0}'.format(self.ref_fasta_file)
+                print( 'assign_taxonomy:id_to_taxonomy_fp {0}'.format(self.ref_taxonomy_file),
+                        file=f_out )
+                print( 'assign_taxonomy:reference_seqs_fp {0}'.format(self.ref_fasta_file),
+                        file=f_out )
                 
-                # if self.reference_database == 990:
-                # else:
-                #     print >> f_out, 'assign_taxonomy:id_to_taxonomy_fp /home/ubuntu/ref_dbs/its_12_11_otus/taxonomy/97_otu_taxonomy.txt'
-                #     print >> f_out, 'assign_taxonomy:reference_seqs_fp /home/ubuntu/ref_dbs/its_12_11_otus/rep_set/97_otus.fasta'
-    
     def exec_cmnd_and_log(self):
         all_commands = self.cmds
         while len(all_commands) > 0:
@@ -421,15 +496,14 @@ class Config:
             if cmd is False:
                 continue
             self.log.info("Trying : " + cmd)
-	    try:
-                if cmd.startswith('mothur'): # this might not be needed
+            try:
+                if cmd.startswith('mothur'):
                     os.system(cmd)
                 else:
-                    e = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
+                    args = shlex.split(cmd)
+                    e = subprocess.check_output(args, stderr=subprocess.STDOUT)
                     if len(e) > 0:
-                        # self.log.warn('This command generated a warning, see warnings.txt for details.')
                         self.log.warn(e)
-
             except subprocess.CalledProcessError as cpe:
                 out_bytes = cpe.output       # Output generated before error
                 self.log.exception(out_bytes)
@@ -502,8 +576,17 @@ class Config:
         files_to_link.extend( self.get_chimera_out() )
         files_to_link.extend( self.get_alpha_out() )
         files_to_link.extend( self.get_phyloseq_images() )
+        files_to_link.extend( self.get_mapping_file() )
+        files_to_link.extend( self.get_runtime_file() )
+        files_to_link.extend( self.get_picrust_data() )
         return files_to_link
 
+    def get_runtime_file( self ):
+        return [ File_to_link_name( fname = 'runtime.txt', lname = cfg.COLLATED_OUT_DIR) ]
+    
+    def get_mapping_file( self ):
+        return [ File_to_link_name( fname = self.map_file, lname = cfg.COLLATED_OUT_DIR) ]
+        
     def get_chimera_out( self ):
         return [ File_to_link_name( fname = cfg.CHIMERA_FILE, lname = cfg.COLLATED_OUT_DIR ) ]
 
@@ -582,6 +665,14 @@ class Config:
             l.append ( File_to_link_name( fname = f, lname = cfg.COLLATED_OUT_DIR) )
         return l
 
+    def get_picrust_data( self ):
+        l = list()
+        if self.picrust:
+            files = glob.glob( cfg.PICRUST_DIR + '*')
+            for f in files:
+                l.append ( File_to_link_name( fname = f, lname = cfg.COLLATED_OUT_DIR) )
+        return l
+
     def link_metastats_files( self ):
         l = list()
         if hasattr(self, 'differential_otu_enrichment'):
@@ -595,7 +686,7 @@ class Config:
             (num_lines, _) = cfg.line_count(self.lookup_accnos_file()).split()
             self.log.info( num_lines + ' chimeras found.')
             with open( cfg.CHIMERA_FILE, 'w') as f_out:
-                print >> f_out, num_lines + ' chimeras found.\n'
+                print(num_lines + ' chimeras found.\n', file=f_out )
         
     def get_join_paired_end_outputs( self ):
         outs = list()
@@ -609,7 +700,7 @@ class Config:
     def ensure_output_exists( self, fnames ):
         if fnames is False:
             return
-        if isinstance(fnames, basestring):
+        if isinstance(fnames, str):
             l = list()
             l.append( fnames )
             fnames = l
@@ -617,16 +708,19 @@ class Config:
             if os.path.isfile( fname ) and os.stat( fname ).st_size != 0:
                 self.log.info( "Output file {0} exists as expected. Can proceed to next step".format(fname) )
             else:
-                self.log.error("File {0} does not exist. Cannot proceed in pipeline. ".format(fname) )
+                self.log.error(neph_errors.NO_FILE_ERROR)
+                self.log.error("{0} does not exist.".format(fname) )
                 if fname.endswith("fastqjoin.join.fastq"):
-                    self.log.error("Joining failed because too few reads overlapped. Please adjust"\
-                                  +" join parameters or re-evaluate data")
+                    self.log.error(neph_errors.BAD_JOINING)
+                    #self.log.error("Joining failed because too few reads overlapped. Please adjust"\
+                    #             +" join parameters or re-evaluate data")
                 elif fname.endswith("seqs.fna"): # split lib out
-                    self.log.error("Too few reads to proceed. Please adjust trimming parameters "
-                                  + "and / or review data")
+                    self.log.error(neph_errors.TOO_FEW_READS_TRIMMING)
+                    #self.log.error("Too few reads to proceed. Please adjust trimming parameters "
+                    #              + "and / or review data")
                 elif fname.endswith(self.lookup_biom_file() + '.summary.txt'):
-                    self.log.error("No Biom summary file created. Cannot proceed.")
-                    
+                    self.log.error(neph_errors.NO_BIOM_FILE)
+                    #self.log.error("No Biom summary file created. Cannot proceed.")
                 self.do_exit_operations()
                 exit(1)
 
@@ -746,8 +840,9 @@ class Config:
         return l
 
     def log_no_run_bc_missing_file( self, file_name, step_name ):
-        self.log.error('Unable to execute {0} ends because file {1} does not exist.'
-                       .format( step_name, file_name ))
+        self.log.error(neph_errors.NO_BARCODE_FILE)
+        #self.log.error('Unable to execute {0} ends because file {1} does not exist.'
+        #              .format( step_name, file_name ))
         
     def gen_join_paired_end_cmd( self ):
         if self.pipe_name in ['MISEQ_MULTIPLEX', 'MISEQ_PAIR-END']:
@@ -811,8 +906,8 @@ class Config:
                             sample.fwd_fq_file, sample.rev_fq_file, \
                             sample.TreatmentGroup, sample.Description]
                     with open ( dname + '/' + 'map.txt', 'w' ) as f_out:
-                        print >> f_out, "\t".join( head )
-                        print >> f_out, "\t".join( line )
+                        print ("\t".join( head ), file= f_out)
+                        print ("\t".join( line ), file= f_out)
     
     def gen_validate_mapping_cmd( self ):
         if self.pipe_name == 'MISEQ_PAIR-END':
@@ -896,7 +991,7 @@ class Config:
     def gen_denoise_wrapper_cmd( self ):
         if self.pipe_name == 'RAW_SFF_FILE':
             self.cmds = [ 'denoise_wrapper.py '\
-                          + ' --num_cpus=' + str(get_num_cpus())\
+                          + ' --num_cpus=' + str(multiprocessing.cpu_count() )\
                           + ' --output_dir=' + cfg.DENOISE_OUT_DIR\
                           + ' --map_fname=' + self.map_file \
                           + ' --input_file=' + cfg.PROCESS_SFF_OUT_DIR + '/' + re.sub(r"\.sff", ".txt", self.raw_file_full, flags=re.IGNORECASE)\
@@ -940,7 +1035,7 @@ class Config:
                 + ' --output_dir=' + cfg.SPLIT_LIB_OUT_DIR \
                 + ' --barcode_type=not-barcoded'\
                 + ' --mapping_fps=' + self.map_file \
-                + ' --phred_offset=' + phred_offset.stdout \
+                + ' --phred_offset=' + phred_offset.stdout.decode('utf-8') \
                 + ' -i ' + ','.join(inputs) \
                 + ' --sample_ids=' + ','.join(sample_ids)
             self.cmds = [ s ]
@@ -963,7 +1058,7 @@ class Config:
                 + ' --phred_quality_threshold=' + str(self.q_param) \
                 + ' --sequence_max_n=' + str(self.n_param) \
                 + ' --mapping_fps=' + ','.join(maps) \
-                + ' --phred_offset=' + phred_offset.stdout \
+                + ' --phred_offset=' + phred_offset.stdout.decode('utf-8') \
                 + ' --barcode_type=not-barcoded ' \
                 + ' --sample_ids=' + ','.join(sample_ids) \
                 + ' --max_bad_run_length=' + str(self.max_bad_run_length)
@@ -997,7 +1092,11 @@ class Config:
     def gen_closed_reference_otus_cmd( self ):
                           # + ' --parallel'\
                           # + ' --jobs_to_start='+ str(get_num_cpus() / 4) \
-        if self.analysis_type == 'CLOSED_REFERENCE':            
+        if self.analysis_type == 'CLOSED_REFERENCE':
+            line = "\npick_otus:otu_picking_method usearch61_ref\npick_otus:enable_rev_strand_match True\n"
+            with open(self.otus_params_file, 'a') as params:
+                 params.write( line )
+                 params.close()           
             self.cmds = [ "pick_closed_reference_otus.py "\
                           + " -i " + self.get_input_seqs() \
                           + " --output_dir=" + cfg.PICK_OTUS_OUT_DIR \
@@ -1009,12 +1108,16 @@ class Config:
         
     def gen_pick_de_novo_otus_cmd( self ):
         if self.analysis_type == 'DE_NOVO':
+            line = "\npick_otus:otu_picking_method usearch61_ref\npick_otus:enable_rev_strand_match True\n"
+            with open(self.otus_params_file, 'a') as params:
+                 params.write( line )
+                 params.close() 
             self.cmds = [ "pick_de_novo_otus.py " \
                           + " --input_fp=" + self.get_input_seqs() \
                           + " --output_dir=" + cfg.PICK_OTUS_OUT_DIR \
                           + " --force " \
                           + " --parameter_fp=" + file_exists( self.otus_params_file )\
-                          + " --jobs_to_start="+ str(get_num_cpus() / 4) \
+                          + " --jobs_to_start="+ str(int(multiprocessing.cpu_count() / 4)) \
                           + " --parallel" ]
         return self
 #hard coding db for now
@@ -1026,6 +1129,7 @@ class Config:
                           + ' -i ' +  self.get_input_seqs() \
                           + ' -o ' + cfg.PICK_OTUS_OUT_DIR \
                           + ' -r ' + file_exists( self.ref_fasta_file ) \
+                          + ' -m sortmerna_sumaclust' \
                           + ' --parameter_fp=' + file_exists( self.otus_params_file )\
                           + ' --force' \
                           + ' --suppress_align_and_tree'    ]
@@ -1039,7 +1143,7 @@ class Config:
                           + ' -i ' +  self.get_input_seqs() \
                           + ' -o ' + cfg.PICK_OTUS_OUT_DIR \
                           + ' -r ' + file_exists( self.ref_fasta_file )\
-                          + ' --otu_picking_method uclust ' \
+                          + ' --otu_picking_method sortmerna_sumaclust ' \
                           + ' --parameter_fp=' + file_exists( self.otus_params_file )\
                           + ' --force' ]
         return self
@@ -1086,26 +1190,33 @@ class Config:
         return self
 
     def lookup_good_counts_bad_samples( self, biom_smmry_fname ):
+        # DEFAULT CASE returns 20% of the Median (as deff'd in summry file)
+        # EVERYTHING Below this is part of bad_samples
+
         # this function also might set the depth if the depth has been
         # specd as a fraction (using the biom files's Max_count * fraction)
         counts_region_started = False
-        max_count = 0
+        median_count = 0
         good_counts = list()
         bad_samples = list()
         min_count_threshold = 0
+        min_count = 0
         
         with open (biom_smmry_fname, 'r') as f_in:
             for line in nonblank_lines(f_in):
                 line = line.strip()
-                if line.startswith('Max:'):
-                    (_, max_count) = line.split(": ");
-
+                if line.startswith('Min:'):
+                    (_, min_count) = line.split(": "); 
+                if line.startswith('Median:'):
+                    (_, median_count) = line.split(": ");                    
                 elif line.startswith('Counts/sample detail:'):
-                    # we don't know wht max count until now, now able to work out min_count_thresh
+                    # we don't know what median count until now, now able to work out min_count_thresh
                     counts_region_started = True
-                    if self.fraction:
-                        self.sample_depth = int( float(max_count) * float(self.fraction))
-
+                    if self.fraction: # this is a front end Form param
+                        self.sample_depth = int( float(median_count) * float(self.fraction))
+                        if int( float(min_count)) > self.sample_depth:
+                            self.sample_depth = int( float(min_count) - 1 )
+                    # else they have typed in an int, and we are not working with fractions.
                 elif counts_region_started:
                     (sample, count) = line.split(": ")
                     if int(float(count)) > self.sample_depth:
@@ -1128,10 +1239,11 @@ class Config:
                         line_ok = False
                 if line_ok or num_lines==0:
                     num_lines += 1
-                    print >> f_out, line
+                    print (line, file=f_out)
         f_out.close()
         if num_lines == 1:
-            self.log.error('You have no OTUS in your data, cannot proceed. Exiting.')
+            self.log.error(neph_errors.NO_OTUS)
+            #self.log.error('You have no OTUS in your data, cannot proceed. Exiting.')
             self.do_exit_operations()
             exit(1)
 
@@ -1147,11 +1259,11 @@ class Config:
         self.samples = self.load_map_file()
         
         if len(bad_samples) > 0:
-            self.log.info("PLEASE NOTE!: Based on your cutoff we are ignoring samples:"\
-                         + ','.join(bad_samples))
+            self.log.info("\n\nPLEASE NOTE!: Based on your cutoff we are ignoring samples:"\
+                         + ','.join(bad_samples) + '\n\n')
             
         with open(cfg.PICK_OTUS_OUT_DIR + '/samples_being_ignored.txt', 'w') as f_out:
-            print >> f_out, "\n".join( bad_samples )
+            print ( "\n".join( bad_samples ), file=f_out )
 
         if len(good_counts) >= cfg.MIN_NUM_SAMPLES_FOR_CORE_DIV:
             rm('-r', '-f', cfg.TAXA_PLOTS_OUT_DIR) # we're going to gen this in core div
@@ -1176,9 +1288,10 @@ class Config:
 
     def notify_if_core_div_overridden( self ):
         if self.has_overide_core_div:
-            self.log.info("\n!!!!! PLEASE NOTE !!!!!\n")
-            self.log.info("You have asked for core diversity analysis; however there are too few \
-            samples to allow this to occur. Core diversity analysis has NOT been run.")
+            self.log.info(neph_errors.NOT_ENOUGH_SAMPLES_CD)
+            #self.log.info("\n!!!!! PLEASE NOTE !!!!!\n")
+            #self.log.info("You have asked for core diversity analysis; however there are too few \
+            #samples to allow this to occur. Core diversity analysis has NOT been run.")
 
     def rm_alpha_rare_dir_if_already_run_core_div( self ):
         if self.do_run_core_div:
@@ -1211,44 +1324,54 @@ class Config:
     def gen_core_diversity_ITS_cmd ( self, depth ):
         if self.core_diversity_analyses and self.analysis_type == 'OPEN_REFERENCE_ITS':
             if depth == -1:
-                self.log.error('All samples assigned as bad according to cutoff supplied. Exiting.')
+                self.log.error(neph_errors.NO_SAMPLES_AFTER_FILTER)
+                #self.log.error('All samples assigned as bad according to cutoff supplied. Exiting.')
                 self.do_exit_operations()
                 exit(1)
             elif not self.do_run_core_div:
-                self.log.info("Unable to run core diversity. There are too few samples with enough "\
-                              +"depth to be able to be able to do core diversity analysis.")
+                self.log.info(neph_errors.NOT_ENOUGH_SAMPLES_CD)
+                #self.log.info("Unable to run core diversity. There are too few samples with enough "\
+                #              +"depth to be able to be able to do core diversity analysis.")
                 self.has_overide_core_div = True
             else:
                 self.cmds = [ "core_diversity_analyses.py " \
                               + ' --output_dir=' + cfg.CORE_DIVERSITY_OUT_DIR \
                               + ' --input_biom_fp=' + self.lookup_biom_file() \
                               + ' --mapping_fp=' + self.map_file \
-                              + ' --parallel ' \
-                              + ' --jobs_to_start=' + str(get_num_cpus() / 4) \
                               + ' --sampling_depth=' + str( depth ) \
                               + ' --categories=' + get_C_opt_from_file( self.map_file )\
                               + ' --nonphylogenetic_diversity' \
                               + ' --parameter_fp=' + self.otus_params_file ]
         return self
 
-
+    def check_if_runing_core_diversity( self ):
+        if self.do_run_core_div is False:
+            return self
+        if len( get_C_opt_from_file( self.map_file ) ) == 0:
+            self.do_run_core_div = False
+        return self
+    
     def gen_core_diversity_cmd ( self, depth ):
         if self.core_diversity_analyses and self.analysis_type != 'OPEN_REFERENCE_ITS':
             if depth == -1:
-                self.log.error('All samples assigned as bad according to cutoff supplied. Exiting.')
+                self.log.error(neph_errors.NO_SAMPLES_AFTER_FILTER)
+                #self.log.error('All samples assigned as bad according to cutoff supplied. Exiting.')
                 self.do_exit_operations()
                 exit(1)
             elif not self.do_run_core_div:
-                self.log.info("Unable to run core diversity. There are too few samples with enough "\
-                              +"depth to be able to be able to do core diversity analysis.")
+                self.log.info(neph_errors.NOT_ENOUGH_SAMPLES_CD)
+                #self.log.info("Unable to run core diversity. There are too few samples with enough "\
+                #              +"depth to be able to be able to do core diversity analysis.")
                 self.has_overide_core_div = True
             else:
+                if self.database == "Greengenes_97" or self.database == "Greengenes_99":
+                    with open(self.otus_params_file, 'a') as params:
+                        params.write('summarize_taxa:level 2,3,4,5,6,7\n')
+                        params.close()
                 self.cmds = [ "core_diversity_analyses.py " \
                               + ' --output_dir=' + cfg.CORE_DIVERSITY_OUT_DIR \
                               + ' --input_biom_fp=' + self.lookup_biom_file() \
                               + ' --mapping_fp=' + self.map_file \
-                              + ' --parallel ' \
-                              + ' --jobs_to_start=' + str(get_num_cpus() / 4) \
                               + ' --sampling_depth=' + str( depth ) \
                               + ' --categories=' + get_C_opt_from_file( self.map_file )\
                               + ' --tree_fp=' + self.get_tre_file()\
@@ -1270,6 +1393,16 @@ class Config:
         else:
             biom_file = cfg.PICK_OTUS_OUT_DIR + '/otu_table.biom'
         return biom_file
+
+    def lookup_biom_file_table( self ):
+        biom_file = ''
+        if self.analysis_type == 'OPEN_REFERENCE':
+            biom_file = cfg.PICK_OTUS_OUT_DIR + '/otu_table_mc2_w_tax_no_pynast_failures.txt'
+        elif self.analysis_type == 'OPEN_REFERENCE_ITS':
+            biom_file = cfg.PICK_OTUS_OUT_DIR + '/otu_table_mc2_w_tax.txt'
+        else:
+            biom_file = cfg.PICK_OTUS_OUT_DIR + '/otu_table.txt'
+        return biom_file
         
     def lookup_mothur_shared_file( self ):
         if self.analysis_type == 'OPEN_REFERENCE':
@@ -1288,14 +1421,16 @@ class Config:
             else:
                 return cfg.PICK_OTUS_OUT_DIR + '/rep_set/seqs_rep_set.fasta'
         else:
-            self.log.error("I cannot lookup rep_set sequence file. Analysis type:" + self.analysis_type)
+            self.log.error(neph_errors.NO_REF_ALIGN_FILE)
+            self.log.error("Analysis type:" + self.analysis_type)
             # emit error
             self.do_exit_operations()
             exit(1)
 
     def gen_make_otu_heatmap_cmd( self ):
         if self.count_num_samples() == 1:
-            self.log.warn("Unable to run make_otu_heatmap on a single sample. Skipping.")
+            self.log.warn(neph_errors.NO_HEATMAP_FOR_SINGLE)
+            #self.log.warn("Unable to run make_otu_heatmap on a single sample. Skipping.")
         elif self.interactive_otu_heatmap:
             mkdir('-p', cfg.HEATMAP_OUT_DIR)
             self.cmds = [ 'make_otu_heatmap.py '\
@@ -1341,15 +1476,17 @@ class Config:
                 self.qual_file = cfg.PROCESS_SFF_OUT_DIR + '/'\
                                  + re.sub(r"\.sff", ".qual", self.raw_file_full, flags=re.IGNORECASE)
             else:
-                self.log.error('Unable to execute mothur sffinfo because file {0} does not \
-                exist.'.format(self.raw_file_full))
+                self.log.error(neph_errors.NO_FILE_ERROR)
+                self.log.error('{0} does not exist.'.format(self.raw_file_full))
+                self.do_exit_operations()
         return self
                                 
     def make_mothur_sffinfo( self ):
         if self.pipe_name == 'RAW_SFF_FILE':
             if not os.path.isfile(self.raw_file_full):
-                self.log.error('Unable to execute mothur sffinfo because file {0} does not \
-                exist.'.format(self.raw_file_full))
+                self.log.error(neph_errors.NO_FILE_ERROR)
+                self.log.error('{0} does not exist.'.format(self.raw_file_full))
+                self.do_exit_operations()
             else:
                 self.cmds = [ mothurize('sffinfo',
                                         [ 'sff=' + self.raw_file_full,
@@ -1364,7 +1501,7 @@ class Config:
             self.cmds = [ mothurize ('metastats',
                               ['shared=' + file_exists ( self.lookup_mothur_shared_file() ),
                                'design=' + file_exists ( mothur_map_file ),
-                               'processors=' + str(get_num_cpus()) ] ) ]
+                               'processors=' + str(multiprocessing.cpu_count()) ] ) ]
 
         return self        
         
@@ -1381,8 +1518,8 @@ class Config:
         if self.chimera:
             self.cmds = [ mothurize ('chimera.uchime',
                                      ['fasta=' + file_exists ( self.lookup_rep_set_fa_file() ),
-                                      'reference=/usr/local/lib/python2.7/dist-packages/qiime_test_data/align_seqs/core_set_aligned.fasta.imputed',
-                                      'processors='+ str(get_num_cpus()) ]) ]
+                                      'reference=/usr/local/src/miniconda3/envs/qiime1/lib/python2.7/site-packages/qiime_test_data/align_seqs/core_set_aligned.fasta.imputed',
+                                      'processors='+ str(multiprocessing.cpu_count()) ]) ]
         return self
 
     def lookup_accnos_file ( self ):
@@ -1438,8 +1575,15 @@ class Config:
             self.cmds = [ 'parallel_align_seqs_pynast.py '\
                           + ' --input_fasta_fp=' + cfg.PICK_OTUS_OUT_DIR + '/rep_set_non_chimeric.fasta '\
                           + ' --output_dir=' + cfg.PYNAST_ALIGNED_SEQS_OUT_DIR \
-                          + ' --jobs_to_start=' + str(get_num_cpus()) \
+                          + ' --jobs_to_start=' + str(multiprocessing.cpu_count()) \
                           + ' --poll_directly' ]
+        return self
+
+    def gen_align_seqs_pynast_cmd( self ):
+        if self.chimera and os.path.isfile ( cfg.PICK_OTUS_OUT_DIR + '/rep_set_non_chimeric.fasta' ):
+            self.cmds = [ 'align_seqs.py '\
+                          + ' --input_fasta_fp=' + cfg.PICK_OTUS_OUT_DIR + '/rep_set_non_chimeric.fasta '\
+                          + ' --output_dir=' + cfg.PYNAST_ALIGNED_SEQS_OUT_DIR ]
         return self
 
     def gen_filter_alignment_cmd( self ):
@@ -1461,15 +1605,136 @@ class Config:
             self.cmds = [ mothurize ('make.shared', ['biom=' + file_exists( self.lookup_biom_file())]) ]
         return self
 
+    def biom_convert_to_table( self ):
+        self.cmds = ['biom convert '\
+                     + ' --table-type="OTU table" '\
+                     + ' -i ' + file_exists( self.lookup_biom_file())\
+                     + ' -o ' + self.lookup_biom_file_table()\
+                     + ' --to-tsv --header-key taxonomy']
+        return self
+
+    def biom_convert_to_biom( self ):
+        self.cmds = ['biom convert '\
+            + ' --table-type="OTU table" '\
+            + ' -i ' + self.lookup_biom_file_table()\
+            + ' -o ' + file_exists( self.lookup_biom_file())\
+            + ' --to-json --process-obs-metadata taxonomy']
+        return self
+
+    def get_reference_DBs( self, dbs ):
+        fname = 'https://s3.amazonaws.com/nephele2-ref-dbs/' + dbs
+        if not os.path.isfile(os.path.basename(fname)):
+            wget(fname)
+            archive = tarfile.open(dbs, 'r:gz')
+            archive.extractall('.')
+        self.dbs = dbs
+        return self
+
+    def get_sortmerna_DBs( self ):
+        if self.analysis_type == "OPEN_REFERENCE" or self.analysis_type == "OPEN_REFERENCE_ITS":
+            dbs = self.database
+            bursttrie = 'https://s3.amazonaws.com/nephele2-ref-dbs/' + dbs + '.bursttrie_0.dat'
+            kmer = 'https://s3.amazonaws.com/nephele2-ref-dbs/' + dbs + '.kmer_0.dat'
+            pos = 'https://s3.amazonaws.com/nephele2-ref-dbs/' + dbs + '.pos_0.dat'
+            stats = 'https://s3.amazonaws.com/nephele2-ref-dbs/' + dbs + '.stats'
+            sortmerna_line = '\npick_otus:sortmerna_db ' + dbs + '\n'
+            if not os.path.isfile(os.path.basename(kmer)):
+                wget(bursttrie)
+                wget(kmer)
+                wget(pos)
+                wget(stats)
+            with open(self.otus_params_file, 'a') as params:
+                params.write( sortmerna_line )
+                params.close()
+            self.dbs = dbs
+        return self
+
+    def gen_closed_reference_picrust( self ): 
+        if self.picrust:
+            if self.analysis_type == "OPEN_REFERENCE":
+                line = "\npick_otus:otu_picking_method usearch61_ref\npick_otus:enable_rev_strand_match True\n"
+                with open('picrust_params.txt', 'w') as params:
+                    params.write( line )
+                    params.close()
+                self.cmds = [ "pick_closed_reference_otus.py "\
+                  + " -i " + self.get_input_seqs() \
+                  + " --output_dir=otus_picrust" \
+                  + ' --reference_fp=' + file_exists( self.ref_fasta_file )\
+                  + ' --taxonomy_fp=' + file_exists( self.ref_taxonomy_file )\
+                  + ' --parameter_fp=picrust_params.txt'\
+                  + ' --force' ]
+            elif self.analysis_type == "DE_NOVO":
+                self.cmds = [ "pick_closed_reference_otus.py "\
+                              + " -i " + self.get_input_seqs() \
+                              + " --output_dir=otus_picrust" \
+                              + ' --reference_fp=' + file_exists( self.ref_fasta_file )\
+                              + ' --taxonomy_fp=' + file_exists( self.ref_taxonomy_file )\
+                              + ' --parameter_fp=' + file_exists( self.otus_params_file )\
+                              + ' --force' ]
+            else:
+                cp("-r", cfg.PICK_OTUS_OUT_DIR, "otus_picrust")
+        return self
+    
+
+    def gen_norm_by_copy_num( self ):
+        if self.picrust:
+            mkdir('-p', cfg.PICRUST_DIR)
+            self.cmds = ['normalize_by_copy_number.py'\
+                + ' -i otus_picrust/otu_table.biom'\
+                + ' -o ' + cfg.PICRUST_DIR + '/normalized_otus.biom' ]
+        return self
+
+    def gen_predict_metagenomes( self ):
+        if self.picrust:
+            self.cmds = ['predict_metagenomes.py '\
+                + ' -i ' + cfg.PICRUST_DIR + '/normalized_otus.biom'\
+                + ' -o ' + cfg.PICRUST_DIR + '/metagenome_predictions.biom' ]
+        return self
+
+    def gen_cat_by_function_lvl_2( self ):
+        if self.picrust:
+            self.cmds = ['categorize_by_function.py '\
+                + ' -i ' + cfg.PICRUST_DIR + '/metagenome_predictions.biom'\
+                + ' -c "KEGG_Pathways" '\
+                + ' -l 2' \
+                + ' -o ' + cfg.PICRUST_DIR + '/predicted_metagenomes.L2.biom' ]
+        return self
+
+    def gen_cat_by_function_lvl_3( self ):
+        if self.picrust:
+            self.cmds = ['categorize_by_function.py '\
+                + ' -i ' + cfg.PICRUST_DIR + '/metagenome_predictions.biom'\
+                + ' -c "KEGG_Pathways" '\
+                + ' -l 3' \
+                + ' -o ' + cfg.PICRUST_DIR + '/predicted_metagenomes.L3.biom' ]
+        return self
+
+    def gen_summarize_taxa_through_plots_lvl_2( self ):
+        if self.picrust:
+            self.cmds =  ['summarize_taxa_through_plots.py '\
+                + ' -i ' + cfg.PICRUST_DIR + '/predicted_metagenomes.L2.biom'\
+                + ' -o ' + cfg.PICRUST_DIR + '/picrust_at_lvl2'\
+                + ' -p ' + 'qiime_params_picrust2.txt' ]
+        return self
+
+    def gen_summarize_taxa_through_plots_lvl_3( self ):
+        if self.picrust:
+            self.cmds =  ['summarize_taxa_through_plots.py '\
+                + ' -i ' + cfg.PICRUST_DIR + '/predicted_metagenomes.L3.biom'\
+                + ' -o ' + cfg.PICRUST_DIR + '/picrust_at_lvl3'\
+                + ' -p ' + 'qiime_params_picrust3.txt' ]
+        return self
+
     def __str__( self ):
         return ''
 
     def __repr__(self):
         s = ''
-	for var in (vars(self)):
+        for var in (vars(self)):
             s += var + ' : ' + str(getattr(self,var)) + "\n"
-        return s
-
+            return s
+    
+        
 def nonblank_lines(f):
     for l in f:
         line = l.rstrip()
@@ -1506,15 +1771,17 @@ def gen_ID_Treatment_map ( fname ):
             l = line.split("\t")
             if line.startswith('#'):
                 if 'TreatmentGroup' not in l:
-                    log.info("There's no TreatmentGroup in the Headline of the Mapping file!")
+                    self.log.error(neph_errors.NO_TREATMENT_GROUP)
+                    #log.info("There's no TreatmentGroup in the Headline of the Mapping file!")
+                    self.do_exit_operations()
                 else:
                     location_of_treatment_col = l.index('TreatmentGroup')
             else:
                 samples.append(Sample(SampleID = l[0], TreatmentGroup = l[location_of_treatment_col]))
     with open ( fname_out, 'w' ) as f_out:
-        print >> f_out, "\t".join(['#SampleID', 'TreatmentGroup'])
+        print( "\t".join(['#SampleID', 'TreatmentGroup']), file=f_out )
         for sample in samples:
-            print >> f_out, "\t".join([ sample.SampleID, sample.TreatmentGroup ])
+            print("\t".join([ sample.SampleID, sample.TreatmentGroup ]), file= f_out)
 
     return fname_out
 
@@ -1534,6 +1801,7 @@ def guarantee_file_exists( fname ):
     if not os.path.isfile( fname ):
         call( ['touch', fname] )
     return fname
+
 
     # def ensure_user_input_depth_lt_mean_depth( self, depth ):
     #     mean = None
@@ -1562,3 +1830,4 @@ def guarantee_file_exists( fname ):
     #         logging.info('Mean depth was calculated as:' + str(mean) + '. This value is greater than depth entered ' + str(depth) + ', can proceed.')        
 
 
+        
