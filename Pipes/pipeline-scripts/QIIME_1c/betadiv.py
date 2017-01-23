@@ -10,6 +10,9 @@ from sh import mkdir, wget, unzip, guess_fq_score_type
 from optparse import OptionParser
 import subprocess
 import multiprocessing
+import neph_errors
+import tarfile
+
 # get body site
 # learn relevant sample IDs (#SampleID) from PSN file, write to a file.
 # write every line of body site of interest (HMPbodysubsite) to a file.
@@ -59,7 +62,7 @@ class Cfg:
 
     HMP_SPLT_OUT_DIR = _BASE + 'hmp_split_lib_outs'
     USER_SPLT_OUT_DIR = 'split_lib_out'
-    
+
     HMP_CLOSED_OTUS_OUT_DIR = _BASE + 'hmp_closed_otus_outs'
     USER_CLOSED_OTUS_OUT_DIR = _BASE + 'user_closed_otus_outs'
     DACC_BIOM_FILE = HMP_CLOSED_OTUS_OUT_DIR + '/otu_table.biom'
@@ -73,6 +76,9 @@ class Cfg:
     
     BETA_DIV_OUT_DIR = _BASE + 'beta_diversity_outs'
     BETA_DIV_OUT_FNAME = BETA_DIV_OUT_DIR + '/bray_curtis_user_hmp_merged.txt'
+    HMP_DB_TAR = 'HMP_ref_dbs.tar.gz'
+    HMP_PARAMS = 'HMP_params.txt'
+
 
 def setup_logger( log_name ):
     formatter = logging.Formatter(fmt='[ %(asctime)s - %(levelname)s ] %(message)s\n')
@@ -119,6 +125,12 @@ def gen_summarize_taxa_cmd( biom_file, sample ):
         + ' --otu_table_fp=' + biom_file\
         + ' --output_dir=' + Cfg.SUMMARIZE_TAXA_OUT_DIR + sample
 
+def gen_hmp_params( params ):
+    line = "pick_otus:otu_picking_method usearch61_ref\npick_otus:enable_rev_strand_match True\n"
+    with open(params, 'w') as par:
+        par.write( line )
+        par.close()  
+
 def gen_merge_otu_tables_cmd(biom_file_a, biom_file_b):
     return 'merge_otu_tables.py '\
         + ' --input_fps=' + biom_file_a + ',' + biom_file_b\
@@ -141,8 +153,6 @@ def gen_beta_diversity_through_plots( biom_file, map_file, tree_file, out_dir ):
         + ' --otu_table_fp=' + biom_file \
         + ' --mapping_fp='+ map_file\
         + ' --tree_fp='+ tree_file\
-        + ' --jobs_to_start=' + str(int(multiprocessing.cpu_count()))\
-        + ' --parallel'\
         + ' --parameter_fp=betadiv_params.txt'\
         + ' --output_dir=' + out_dir
 
@@ -208,14 +218,42 @@ def print_n_samples_to_file( samples, n ):
 def get_DACC_region_file( region ):
     fname = region + '_reads.zip'
     if not os.path.isfile(fname):
+        wget('' + fname)
         unzip('-o', fname)
     
-def get_DACC_map_file (body_site, region_dacc):
+def get_DACC_BIOM_file( database, body_site, region_dacc ):
+    if database == "Greengenes_99":
+        database = "biom-gg-99"
+    elif database == "Greengenes_97":
+        database = "biom-gg-97"
+    elif database == "SILVA_99":
+        database = "biom-silva-99"
+    elif database == "SILVA_97":
+        database = "biom-silva-97"
+    else:
+        log.error(neph_errors.NO_HMP_DATABASE)
+
+    fname = '' + database + '/' + body_site + '_' + region_dacc + '.mapping.biom'
     if not os.path.isfile(os.path.basename(fname)):
         wget(fname)
     return os.path.basename(fname)
 
-def gen_closed_reference_cmd( inputs, out_dir, ref_fasta_file, ref_taxonomy_file ):
+def get_DACC_map_file (body_site, region_dacc):
+    fname = '' + body_site + '_' + region_dacc +'.mapping.txt'
+    if not os.path.isfile(os.path.basename(fname)):
+        wget(fname)
+    return os.path.basename(fname)
+
+def get_reference_DBs ( dbs ):
+    fname = '' + dbs
+    if not os.path.isfile(os.path.basename(fname)) & os.path.exists( 'HMP_ref_dbs' ) == False:
+        wget(fname)
+        archive = tarfile.open(dbs, 'r:gz')
+        archive.extractall('.')
+    return os.path.basename(fname)
+
+
+def gen_closed_reference_cmd( inputs, out_dir, ref_fasta_file, ref_taxonomy_file, params ):
     #        + ' --parallel'\ < this blows things up
     # + ' --jobs_to_start='+ str(int(multiprocessing.cpu_count() / 4))\
     return  "pick_closed_reference_otus.py "\
@@ -223,6 +261,7 @@ def gen_closed_reference_cmd( inputs, out_dir, ref_fasta_file, ref_taxonomy_file
         + " --output_dir=" + out_dir \
         + ' --reference_fp=' + ref_fasta_file \
         + ' --taxonomy_fp=' + ref_taxonomy_file \
+        + ' -p ' + params \
         + ' --force' 
         
 def gen_split_lib_for_fastq_cmd( samples, dacc_map_file, out_dir ):
@@ -363,11 +402,14 @@ def gen_join_paired_end_cmd( samples ):
 def main( inputs ):
     log = setup_logger('COMPARE_TO_HMP')
     DACC_map_file = get_DACC_map_file( inputs.body_site, inputs.region_dacc )
-    DACC_reads_fname = get_DACC_region_file( inputs.region_dacc )
+    #    DACC_reads_fname = get_DACC_region_file( inputs.region_dacc )
+    DACC_BIOM_FILE = get_DACC_BIOM_file( inputs.hmp_database, inputs.body_site, inputs.region_dacc )
     DACC_samples = gen_samples( DACC_map_file )
     user_samples = gen_samples( inputs.map_file )
+    HMP_DB = get_reference_DBs( Cfg.HMP_DB_TAR )
+    exec_cmnd( gen_hmp_params( Cfg.HMP_PARAMS ), log)
     
-    exec_cmnd( gen_split_lib_for_fastq_cmd( DACC_samples, DACC_map_file, Cfg.HMP_SPLT_OUT_DIR), log )
+#    exec_cmnd( gen_split_lib_for_fastq_cmd( DACC_samples, DACC_map_file, Cfg.HMP_SPLT_OUT_DIR), log )
     if inputs.user_seqs == 'rawfile.fasta': # this implies we're running Mothur 454
         exec_cmnd( gen_split_libraries_cmd( user_samples,
                                             inputs.map_file,
@@ -382,22 +424,23 @@ def main( inputs ):
     # else we already have split_lib_out/seqs.fna
 
     # for DACC
-    exec_cmnd(gen_closed_reference_cmd( Cfg.HMP_SPLT_OUT_DIR + '/seqs.fna',
-                                        Cfg.HMP_CLOSED_OTUS_OUT_DIR,
-                                        neph_cfg.DB_V_TO_REF_FASTA_FILE[inputs.hmp_database],
-                                        neph_cfg.DB_V_TO_REF_TAXONOMY_FILE[inputs.hmp_database] ),log)
+#    exec_cmnd(gen_closed_reference_cmd( Cfg.HMP_SPLT_OUT_DIR + '/seqs.fna',
+#                                        Cfg.HMP_CLOSED_OTUS_OUT_DIR,
+#                                        neph_cfg.HMP_REF_FASTA_FILE[inputs.hmp_database],
+#                                        neph_cfg.HMP_REF_TAXONOMY_FILE[inputs.hmp_database] ),log)
     # for user
     exec_cmnd(gen_closed_reference_cmd( Cfg.USER_SPLT_OUT_DIR + '/seqs.fna',
                                         Cfg.USER_CLOSED_OTUS_OUT_DIR,
-                                        neph_cfg.DB_V_TO_REF_FASTA_FILE[inputs.hmp_database],
-                                        neph_cfg.DB_V_TO_REF_TAXONOMY_FILE[inputs.hmp_database] ),log)
+                                        neph_cfg.HMP_REF_FASTA_FILE[inputs.hmp_database],
+                                        neph_cfg.HMP_REF_TAXONOMY_FILE[inputs.hmp_database],
+                                        Cfg.HMP_PARAMS ),log)
 
-    exec_cmnd(gen_merge_otu_tables_cmd( Cfg.DACC_BIOM_FILE, Cfg.USER_BIOM_FILE ), log)
+    exec_cmnd(gen_merge_otu_tables_cmd( DACC_BIOM_FILE, Cfg.USER_BIOM_FILE ), log)
     exec_cmnd(gen_merge_map_files_cmd( DACC_map_file, inputs.map_file ), log)
     exec_cmnd(gen_beta_diversity_cmd( Cfg.MERGED_BIOM_FILE_OUT ), log )
     exec_cmnd(gen_beta_diversity_through_plots( Cfg.MERGED_BIOM_FILE_OUT,
                                                 Cfg.MERGED_MAP_FILE_OUT,
-                                                neph_cfg.DB_V_TO_TREE_FILE[inputs.hmp_database],
+                                                neph_cfg.HMP_TREE_FILE[inputs.hmp_database],
                                                 Cfg.BETA_PLOTS_OUT_DIR ), log)
     s_ids_to_dist = gen_sample_sample_dist_dict( user_samples, Cfg.BETA_DIV_OUT_FNAME )
     max_dist = find_max_float_in_file( Cfg.BETA_DIV_OUT_FNAME )
