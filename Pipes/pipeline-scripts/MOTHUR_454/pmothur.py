@@ -272,6 +272,7 @@ if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config
 for res_file in ['97_otu_map.txt','LookUp_Titanium.pat','silva.bacteria.fasta',\
             'gg_13_5_97.fasta','gg_13_5_97.gg.tax']:
    if not( os.path.isfile('./'+res_file) ):
+      syscall('wget -q '+res_file)
 send2log( 'Work folder '+work_dir+' contains:' , log_file )
 syscall( 'ls >> '+log_file )
 

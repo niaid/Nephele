@@ -1,0 +1,404 @@
+Thu Apr 21 11:26:12 EDT 2016 MOTHUR pipeline configuration
+AMI_ID,ami-0549396f
+BDIFFS,1
+COMP_WITH_DACC,YES
+CORE_DIVERSITY_ANALYSES,YES
+CRITERIA,90
+DESIGN_FILE,rawfile.design
+DESIGN_MAP_FILE,mothur_qiime.SRR057663.mapping.txt
+DIFFERENTIAL_OTU_ENRICHMENT,YES
+
+FLIP,TRUE
+INPUT_TYPE,454_SFF_FILE
+INTERACTIVE_OTU_HEATMAP,YES
+InstanceType,c3.4xlarge
+KEEPFIRST,430
+LOG_FILE,logfile.txt
+MAP_FILE,mothur_qiime.SRR057663.mapping.txt
+MAXAMBIG,0
+MAXFLOWS,720
+MAXHOMOP,8
+MEMORY,30759080
+MINFLOWS,360
+MINLENGTH,200
+NUM_OF_PROC,15
+OLIGO_FILE,oligo.txt
+OPTIMIZE,start-end
+PDIFFS,1
+RAW_FILE_FULL,SRR057663.sff
+
+UserDescription,454_m_QA
+pipelineName,Mothur SFF
+
+mothur > sffinfo(sff=rawfile.sff)
+
+Output File Names: 
+rawfile.fasta
+rawfile.qual
+rawfile.flow
+
+mothur > summary.seqs(fasta=rawfile.fasta)
+
+Using 1 processors.
+
+		Start	End	NBases	Ambigs	Polymer	NumSeqs
+Minimum:	1	39	39	0	2	1
+2.5%-tile:	1	44	44	0	2	11133
+25%-tile:	1	322	322	0	4	111324
+Median: 	1	482	482	0	5	222647
+75%-tile:	1	512	512	0	5	333970
+97.5%-tile:	1	528	528	1	7	434161
+Maximum:	1	1072	1072	550	550	445293
+Mean:	1	392.22	392.22	0.268823	4.66475
+# of Seqs:	445293
+
+Output File Names: 
+rawfile.summary
+
+It took 9 secs to summarize 445293 sequences.
+
+mothur > trim.flows(flow=rawfile.flow, oligos=oligo.txt, pdiffs=1, bdiffs=1, processors=15, minflows=360, maxflows=720)
+
+
+Output File Names: 
+rawfile.trim.flow
+rawfile.scrap.flow
+rawfile.SRS020811.Stool.flow
+...
+
+mothur > shhh.flows(file=rawfile.flow.files, processors=15, lookup=LookUp_Titanium.pat)
+
+Output File Names: 
+rawfile.SRS021117.Saliva.shhh.qual
+rawfile.SRS021117.Saliva.shhh.fasta
+rawfile.SRS021117.Saliva.shhh.names
+rawfile.SRS021117.Saliva.shhh.counts
+rawfile.SRS021117.Saliva.shhh.groups
+rawfile.shhh.fasta
+rawfile.shhh.names
+
+
+mothur > trim.seqs(fasta=rawfile.shhh.fasta, name=rawfile.shhh.names, oligos=oligo.txt, pdiffs=1, bdiffs=1, maxhomop=8, minlength=200, flip=T, processors=15)
+
+Output File Names: 
+rawfile.shhh.trim.fasta
+rawfile.shhh.scrap.fasta
+rawfile.shhh.trim.names
+rawfile.shhh.scrap.names
+rawfile.shhh.groups
+
+
+mothur > quit()
+
+Thu Apr 21 12:54:09 EDT 2016 Processing Step 1: Extract Reads from raw sff file (454) and trim to a minimum length DONE
+
+Thu Apr 21 12:54:09 EDT 2016 Processing Step 2: Clusters redundant sequences and aligns to the SILVA based reference alignment provided STARTED
+
+mothur > unique.seqs(fasta=rawfile.shhh.trim.fasta, name=rawfile.shhh.trim.names)
+1000	999
+2000	1990
+3000	2966
+4000	3940
+5000	4907
+6000	5864
+7000	6804
+7250	7043
+
+Output File Names: 
+rawfile.shhh.trim.unique.names
+rawfile.shhh.trim.unique.fasta
+
+mothur > summary.seqs(fasta=rawfile.shhh.trim.unique.fasta, name=rawfile.shhh.trim.unique.names, processors=15)
+
+Output File Names: 
+rawfile.shhh.trim.unique.summary
+
+It took 0 secs to summarize 32485 sequences.
+
+mothur > align.seqs(fasta=rawfile.shhh.trim.unique.fasta, reference=silva.bacteria.fasta, processors=15, flip=T)
+
+
+Output File Names: 
+rawfile.shhh.trim.unique.align
+rawfile.shhh.trim.unique.align.report
+
+
+mothur > screen.seqs(fasta=rawfile.shhh.trim.unique.align, name=rawfile.shhh.trim.unique.names, group=rawfile.shhh.groups, optimize=start-end, criteria=90, processors=15)
+
+Output File Names: 
+rawfile.shhh.trim.unique.good.align
+rawfile.shhh.trim.unique.bad.accnos
+rawfile.shhh.trim.unique.good.names
+rawfile.shhh.good.groups
+
+
+It took 6 secs to screen 7043 sequences.
+
+mothur > filter.seqs(fasta=rawfile.shhh.trim.unique.good.align, vertical=T, trump=., processors=15)
+
+Output File Names: 
+rawfile.filter
+rawfile.shhh.trim.unique.good.filter.fasta
+
+
+mothur > unique.seqs(fasta=rawfile.shhh.trim.unique.good.filter.fasta, name=rawfile.shhh.trim.unique.good.names)
+1000	881
+2000	1707
+3000	2519
+4000	3303
+4500	3676
+
+Output File Names: 
+rawfile.shhh.trim.unique.good.filter.names
+rawfile.shhh.trim.unique.good.filter.unique.fasta
+
+
+mothur > pre.cluster(fasta=rawfile.shhh.trim.unique.good.filter.unique.fasta, name=rawfile.shhh.trim.unique.good.filter.names, group=rawfile.shhh.good.groups, diffs=2)
+
+It took 0 secs to cluster 571 sequences.
+
+/******************************************/
+Running command: unique.seqs(fasta=rawfile.shhh.trim.unique.good.filter.unique.precluster.fasta, name=rawfile.shhh.trim.unique.good.filter.unique.precluster.names)
+1000	959
+2000	1815
+2410	2169
+
+Output File Names: 
+rawfile.shhh.trim.unique.good.filter.unique.precluster.unique.names
+rawfile.shhh.trim.unique.good.filter.unique.precluster.unique.fasta
+
+/******************************************/
+It took 1 secs to run pre.cluster.
+
+Output File Names: 
+rawfile.shhh.trim.unique.good.filter.unique.precluster.fasta
+rawfile.shhh.trim.unique.good.filter.unique.precluster.names
+rawfile.shhh.trim.unique.good.filter.unique.precluster.SRS020470.Stool.map
+...
+
+mothur > chimera.uchime(fasta=rawfile.shhh.trim.unique.good.filter.unique.precluster.fasta, name=rawfile.shhh.trim.unique.good.filter.unique.precluster.names, group=rawfile.shhh.good.groups, processors=15)
+
+
+Output File Names: 
+rawfile.shhh.trim.unique.good.filter.unique.precluster.uchime.chimeras
+rawfile.shhh.trim.unique.good.filter.unique.precluster.uchime.accnos
+
+
+mothur > remove.seqs(accnos=rawfile.shhh.trim.unique.good.filter.unique.precluster.uchime.accnos, fasta=rawfile.shhh.trim.unique.good.filter.unique.precluster.fasta, name=rawfile.shhh.trim.unique.good.filter.unique.precluster.names, group=rawfile.shhh.good.groups, dups=T)
+Removed 1130 sequences from your name file.
+Removed 556 sequences from your fasta file.
+Removed 1130 sequences from your group file.
+
+Output File Names: 
+rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.names
+rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.fasta
+rawfile.shhh.good.pick.groups
+
+
+mothur > classify.seqs(fasta=rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.fasta, name=rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.names, template=gg_13_5_97.fasta, taxonomy=gg_13_5_97.gg.tax, cutoff=80, processors=15, group=rawfile.shhh.good.pick.groups)
+
+Reading rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.names...  Done.
+
+It took 1 secs to create the summary file for 1613 sequences.
+
+Output File Names: 
+rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.gg.wang.taxonomy
+rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.gg.wang.tax.summary
+
+mothur > remove.lineage(fasta=rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.fasta, name=rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.names, group=rawfile.shhh.good.pick.groups, taxonomy=rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.gg.wang.taxonomy, taxon=Chloroplast-Mitochondria-unknown-Archaea-Eukaryota)
+
+Output File Names: 
+rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.gg.wang.pick.taxonomy
+rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.pick.names
+rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.pick.fasta
+rawfile.shhh.good.pick.pick.groups
+
+mothur > system(cp rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.pick.fasta rawfile.final.fasta)
+
+
+mothur > system(cp rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.pick.names rawfile.final.names)
+
+
+mothur > system(cp rawfile.shhh.good.pick.pick.groups rawfile.final.groups)
+
+
+mothur > system(cp rawfile.shhh.trim.unique.good.filter.unique.precluster.pick.gg.wang.pick.taxonomy rawfile.final.taxonomy)
+
+
+mothur > dist.seqs(fasta=rawfile.final.fasta, cutoff=0.15, processors=15)
+
+Output File Names: 
+rawfile.final.dist
+
+It took 1 to calculate the distances for 1613 sequences.
+
+mothur > dist.seqs(fasta=rawfile.final.fasta, cutoff=0.15, processors=15,output=phylip)
+
+Output File Names: 
+rawfile.final.phylip.dist
+
+Output File Names: 
+rawfile.final.an.sabund
+rawfile.final.an.rabund
+rawfile.final.an.list
+
+It took 1 seconds to cluster
+
+mothur > make.shared(list=rawfile.final.an.list, group=rawfile.final.groups, label=0.03)
+0.03
+
+Output File Names: 
+rawfile.final.an.shared
+rawfile.final.an.SRS020470.Stool.rabund
+...
+
+mothur > classify.otu(list=rawfile.final.an.list, name=rawfile.final.names, taxonomy=rawfile.final.taxonomy, group=rawfile.final.groups, label=0.03, reftaxonomy=gg_13_5_97.gg.tax)
+0.03	411
+
+Output File Names: 
+rawfile.final.an.0.03.cons.taxonomy
+rawfile.final.an.0.03.cons.tax.summary
+
+
+mothur > tree.shared(shared=rawfile.final.an.shared, calc=thetayc-jclass)
+
+Using 1 processors.
+0.03
+
+Output File Names: 
+rawfile.final.an.thetayc.0.03.tre
+rawfile.final.an.jclass.0.03.tre
+
+
+mothur > summary.single(shared=rawfile.final.an.shared)
+
+Output File Names: 
+rawfile.final.an.groups.summary
+
+
+mothur > rarefaction.single(shared=rawfile.final.an.shared)
+
+Output File Names: 
+rawfile.final.an.groups.rarefaction
+
+
+mothur > metastats(shared=rawfile.final.an.shared, design=rawfile.design)
+
+Missing shared info for tissue or Saliva. Skipping comparison.
+Missing shared info for tissue or Stool. Skipping comparison.
+
+Output File Names: 
+rawfile.final.an.0.03.Stool-Saliva.metastats
+
+mothur > make.lefse(shared=rawfile.final.an.shared, label=0.03, design=rawfile.design, constaxonomy=rawfile.final.an.0.03.cons.taxonomy)
+
+mothur > make.biom(shared=rawfile.final.an.shared, label=0.03, reftaxonomy=gg_13_5_97.gg.tax, constaxonomy=rawfile.final.an.0.03.cons.taxonomy)
+0.03
+
+Output File Names: 
+rawfile.final.an.0.03.biom
+
+Thu Apr 21 12:58:51 EDT 2016 executing:biom summarize-table -i rawfile.final.an.0.03.biom -o rawfile.biom.summary.txt
+
+Thu Apr 21 12:58:59 EDT 2016 executing:core_diversity_analyses.py -o core_diversity/ -i rawfile.final.an.0.03.biom -m mothur_qiime.SRR057663.mapping.txt -e 1000 --nonphylogenetic_diversity -c "TreatmentGroup"
+
+Thu Apr 21 13:00:47 EDT 2016 executing:make_otu_heatmap_html.py -i rawfile.final.an.0.03.biom -o OTU_Heatmap/
+
+Thu Apr 21 13:00:48 EDT 2016 Analysis - Step 1b Prepare files for processing with Qiime and Huttenhower tools DONE
+
+
+
+mothur > phylotype(taxonomy=rawfile.final.taxonomy)
+
+Output File Names: 
+rawfile.final.tx.sabund
+rawfile.final.tx.rabund
+rawfile.final.tx.list
+
+
+mothur > count.seqs(name=rawfile.final.names, group=rawfile.final.groups)
+
+
+Total number of sequences: 28084
+
+Output File Names: 
+rawfile.final.count_table
+
+
+mothur > make.shared(list=rawfile.final.tx.list, count=rawfile.final.count_table, label=1)
+1
+
+Output File Names: 
+rawfile.final.tx.shared
+rawfile.final.tx.SRS020470.Stool.rabund
+...
+
+mothur > system(cp rawfile.final.tx.shared rawfile.final.phylotype.shared)
+
+
+mothur > classify.otu(list=rawfile.final.tx.list, count=rawfile.final.count_table, taxonomy=rawfile.final.taxonomy, label=1, count=rawfile.final.count_table)
+reftaxonomy is not required, but if given will keep the rankIDs in the summary file static.
+1	145
+
+Output File Names: 
+rawfile.final.tx.1.cons.taxonomy
+rawfile.final.tx.1.cons.tax.summary
+
+
+mothur > tree.shared(shared=rawfile.final.phylotype.shared, calc=thetayc-jclass)
+
+Using 1 processors.
+1
+
+Output File Names: 
+rawfile.final.phylotype.thetayc.1.tre
+rawfile.final.phylotype.jclass.1.tre
+
+
+
+mothur > clearcut(phylip=rawfile.final.phylip.dist)
+
+Output File Names: 
+rawfile.final.phylip.tre
+
+
+mothur > unifrac.unweighted(tree=rawfile.final.phylip.tre, name=rawfile.final.names, group=rawfile.final.groups, distance=lt, processors=15, random=F)
+
+Output File Names: 
+rawfile.final.phylip.uwsummary
+rawfile.final.phylip.tre1.unweighted.phylip.dist
+
+
+mothur > unifrac.weighted(tree=rawfile.final.phylip.tre, name=rawfile.final.names,group=rawfile.final.groups, distance=lt, processors=15, random=F)
+
+Output File Names: 
+rawfile.final.phylip.trewsummary
+rawfile.final.phylip.tre1.weighted.phylip.dist
+
+
+mothur > pcoa(phylip=rawfile.final.phylip.tre1.unweighted.phylip.dist)
+
+Processing...
+Rsq 1 axis: 0.791636
+Rsq 2 axis: 0.861456
+Rsq 3 axis: 0.920469
+
+Output File Names: 
+rawfile.final.phylip.tre1.unweighted.phylip.pcoa.axes
+rawfile.final.phylip.tre1.unweighted.phylip.pcoa.loadings
+
+
+mothur > pcoa(phylip=rawfile.final.phylip.tre1.weighted.phylip.dist)
+
+Processing...
+Rsq 1 axis: 0.917436
+Rsq 2 axis: 0.968276
+Rsq 3 axis: 0.967612
+
+Output File Names: 
+rawfile.final.phylip.tre1.weighted.phylip.pcoa.axes
+rawfile.final.phylip.tre1.weighted.phylip.pcoa.loadings
+
+Thu Apr 21 13:00:50 EDT 2016 Checking for most similar samples in HMP DACC
+
+Thu Apr 21 13:00:50 EDT 2016 for BIOM file:rawfile.final.an.0.03.biom created by this pipeline: with mapping file: mothur_qiime.SRR057663.mapping.txt

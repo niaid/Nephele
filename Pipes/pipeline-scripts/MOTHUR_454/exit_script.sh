@@ -33,6 +33,9 @@ cp *0.03.cons.tax.summary SelectedFiles/
 cp *0.03.cons.taxonomy SelectedFiles/
 cp *lefse* SelectedFiles/
 cp *trim.unique.fasta SelectedFiles/
+cp -r HMP_compare_results SelectedFiles/
+cp -r taxa_plots_and_heatmaps SelectedFiles/
+
 #cp -r *_with_HMPDACC_v13 SelectedFiles/ 
 #cp -r *_with_HMPDACC_v35 SelectedFiles/ 
 # logfile
@@ -46,10 +49,6 @@ cd SelectedFiles
 zip -r ../SelectedFiles.zip *
 mv ../SelectedFiles.zip ../PipelineResults.zip
 chmod 777 ../PipelineResults.zip
-# philip start
-# cd ..
-# ./push_to_aws.py
-# sudo shutdown -h "now"
-# philip end
+
 
 cd ..

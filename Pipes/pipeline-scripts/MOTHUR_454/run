@@ -1,5 +1,5 @@
 TZ='America/New_York' date >>logfile.txt
-. /home/ubuntu/qiime_software/activate.sh >>logfile.txt 2>&1
+#. /home/ubuntu/qiime_software/activate.sh >>logfile.txt 2>&1
 chmod a+x ./create_map_design.sh >> logfile.txt 2>&1
 chmod a+x ./calculate_subsample.pl >> logfile.txt 2>&1
 chmod a+x ./pmothur.py >> logfile.txt 2>&1
@@ -13,6 +13,7 @@ chmod a+x ./push_to_aws.py >> logfile.txt 2>&1
 
 # check map file format and convert if necessary
 cp config.csv config.csv.bak && \
+
 chmod a+x mapcheck.sh && \
 ./mapcheck.sh config.csv >config.csv.tmp && \
 mv config.csv.tmp config.csv && \
