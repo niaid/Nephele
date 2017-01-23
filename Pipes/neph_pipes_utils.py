@@ -1622,7 +1622,7 @@ class Config:
         return self
 
     def get_reference_DBs( self, dbs ):
-        fname = 'https://s3.amazonaws.com/nephele2-ref-dbs/' + dbs
+        fname = '' + dbs
         if not os.path.isfile(os.path.basename(fname)):
             wget(fname)
             archive = tarfile.open(dbs, 'r:gz')
@@ -1633,10 +1633,10 @@ class Config:
     def get_sortmerna_DBs( self ):
         if self.analysis_type == "OPEN_REFERENCE" or self.analysis_type == "OPEN_REFERENCE_ITS":
             dbs = self.database
-            bursttrie = 'https://s3.amazonaws.com/nephele2-ref-dbs/' + dbs + '.bursttrie_0.dat'
-            kmer = 'https://s3.amazonaws.com/nephele2-ref-dbs/' + dbs + '.kmer_0.dat'
-            pos = 'https://s3.amazonaws.com/nephele2-ref-dbs/' + dbs + '.pos_0.dat'
-            stats = 'https://s3.amazonaws.com/nephele2-ref-dbs/' + dbs + '.stats'
+            bursttrie = '' + dbs + '.bursttrie_0.dat'
+            kmer = '' + dbs + '.kmer_0.dat'
+            pos = '' + dbs + '.pos_0.dat'
+            stats = '' + dbs + '.stats'
             sortmerna_line = '\npick_otus:sortmerna_db ' + dbs + '\n'
             if not os.path.isfile(os.path.basename(kmer)):
                 wget(bursttrie)
@@ -1830,4 +1830,3 @@ def guarantee_file_exists( fname ):
     #         logging.info('Mean depth was calculated as:' + str(mean) + '. This value is greater than depth entered ' + str(depth) + ', can proceed.')        
 
 
-        

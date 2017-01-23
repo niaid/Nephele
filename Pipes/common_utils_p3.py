@@ -113,43 +113,16 @@ def unzip_input_file( fname ):
         if f.endswith('.gz'):
             gunzip(f)
 
-
-    # this fails if there is some kind of dir structure:
-        # with zipfile.ZipFile( fname ) as zf:
-        #     files_unzipped = zf.namelist()
-        #     zf.extractall( path='.')
-    # return files_unzipped
-
-
-# def unzip_file( fname ):
-#     # check file exists
-#     # untar if needed
-#     # unzip if needed
-#     # return fnames
-#     files = list()
-#     if not os.path.isfile( fname ):
-#         Cfg.log.error('File: {0} does not exist!'.format( fname ))
-#         return files
-#     with zipfile.ZipFile( fname ) as zf:
-#         files = zf.namelist()        
-#     if tarfile.is_tarfile( fname ):
-#         t = tarfile.TarFile(name=fname, mode='r')
-#         files = t.getnames()
-#         print(files)
-        
+       
 def mv_if_exists( source, dest ):
     if os.path.lexists( source ):
         mv( source, dest)
-    # else:
-    #     Cfg.log.warn('Unable to mv {0}, does not exist.'.format(source) )
 
 
 def cp_if_exists(f_to_cp, dest):
     if os.path.lexists(f_to_cp) and os.path.lexists(dest):
         cp( '-r', f_to_cp, dest)
-    # else:
-    #     Cfg.log.warn('Unable to cp {0}, does not exist in {1}'.format(f_to_cp, dest) )
-    
+
 def ensure_file_exists( outs ):    
     if isinstance(outs, str):
         l = list()
