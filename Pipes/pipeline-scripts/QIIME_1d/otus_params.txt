@@ -1,3 +1,3 @@
-pick_otus:enable_rev_strand_match True
 summarize_taxa:absolute_abundance True
+alpha_diversity:metrics observed_species,chao1,PD_whole_tree,shannon
 make_distance_boxplots:num_permutations 0
