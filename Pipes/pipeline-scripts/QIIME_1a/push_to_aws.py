@@ -20,6 +20,7 @@ def push_results_to_aws():
         exit(0)
     files_to_cp_to_s3 = ('logfile.txt','WorkFolder.zip','PipelineResults.zip')
     for f in files_to_cp_to_s3:
+        dest = '' + j_id + '/out/'+ j_id +'_' + f
         # logging.info('Copying ' + f + ' to ' + dest)
         exec_cmnd('/usr/local/bin/aws s3 cp ' + f + ' ' + dest)
 

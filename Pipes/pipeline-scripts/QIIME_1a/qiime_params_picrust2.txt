@@ -1,0 +1,3 @@
+summarize_taxa:md_identifier	"KEGG_Pathways"
+summarize_taxa:absolute_abundance	True
+summarize_taxa:level	2
