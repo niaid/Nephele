@@ -31,6 +31,6 @@ def file_exists( fname ):
     log = logging.getLogger('Base') 
     if not os.path.isfile( fname ):
         log.error("File does not exist. I cannot proceed here." + fname)
-        raise IOError ( "No such file:"  + fname)
+        raise IOError ( "No such file: "  + fname)
         return False
     return fname
