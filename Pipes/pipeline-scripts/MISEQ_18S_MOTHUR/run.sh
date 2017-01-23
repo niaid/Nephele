@@ -1,11 +1,13 @@
 #!/bin/bash
 TZ='America/New_York' date >logfile.txt
-. /home/ubuntu/qiime_software/activate.sh >>logfile.txt 2>&1
+#not needed on newest AMI (I think?)
+#. /home/ubuntu/qiime_software/activate.sh >>logfile.txt 2>&1
 if [[ -e push_to_aws.py ]]; then
     chmod a+x ./push_to_aws.py >> logfile.txt 2>&1
 fi
 # check map file format and convert if necessary
 cp config.csv config.csv.bak && \
+
 chmod a+x mapcheck.sh && \
 ./mapcheck.sh config.csv >config.csv.tmp && \
 mv config.csv.tmp config.csv && \

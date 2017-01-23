@@ -52,12 +52,9 @@ cd SelectedFiles
 zip -r ../SelectedFiles.zip *
 mv ../SelectedFiles.zip ../PipelineResults.zip
 chmod 777 ../PipelineResults.zip
-# philip start
-# cd ..
-# ./push_to_aws.py
-# philip end
+
 
 echo "Finished creating PipelineResults File"
 cd ..
 rm -rf $out
-# sudo shutdown -h "now"
+

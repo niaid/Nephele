@@ -32,8 +32,6 @@ do
 done < $1
 echo
 
-# download silva files
-
 
 #symlink silva dbs
 ln -s /home/ubuntu/ref_dbs/silva/SILVA_SEED.v123.fasta silva.seed_v123.align
