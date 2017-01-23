@@ -1,0 +1,358 @@
+Tue Aug 11 08:25:09 EDT 2015 MOTHUR pipeline started
+
+Tue Aug 11 08:25:09 EDT 2015 env.json=
+{
+  "Pipeline": "Mothur MiSeq",
+  "ImageId": "ami-c9d32fa2",
+  "jobId": "NZW75JUX7BOF",
+  "submitTime": "Tue, 11 Aug 2015 08:20:53 -0400",
+  "UserDescription": "liping control mothur",
+  "KeyName": "bcbb_cli",
+  "InstanceType": "c3.8xlarge"
+}
+Tue Aug 11 08:25:09 EDT 2015 
+
+
+Tue Aug 11 08:25:09 EDT 2015 number of cores=31
+
+Tue Aug 11 08:25:09 EDT 2015 Memory=61598836KB
+
+Tue Aug 11 08:25:09 EDT 2015 MOTHUR pipeline configuration
+AMI_ID,ami-c9d32fa2
+BS_LIST,NONE
+
+mothur > make.contigs(file=rawfile.files, processors=31)
+
+       Output File Names: 
+       rawfile.trim.contigs.fasta
+       rawfile.contigs.report
+       rawfile.scrap.contigs.fasta
+       rawfile.contigs.groups
+
+mothur > summary.seqs(fasta=rawfile.trim.contigs.fasta, processors=31)
+
+mothur > screen.seqs(fasta=rawfile.trim.contigs.fasta, group=rawfile.contigs.groups,  maxambig=0, maxlength=313)
+
+       Output File Names: 
+       rawfile.trim.contigs.good.fasta
+       rawfile.trim.contigs.bad.accnos
+       rawfile.contigs.good.groups
+
+mothur > unique.seqs(fasta=rawfile.trim.contigs.good.fasta)
+
+mothur > count.seqs(name=rawfile.trim.contigs.good.names, group=rawfile.contigs.good.groups)
+HEAD 1000 <---
+mothur > align.seqs(fasta=rawfile.trim.contigs.good.unique.1000.fasta, reference=silva.bacteria.fasta, processors=31, flip=F)
+
+mothur > pcr.seqs(fasta=silva.bacteria.fasta, start=11895, end=25318, keepdots=F, processors=31)
+
+mothur > align.seqs(fasta=rawfile.trim.contigs.good.unique.fasta, reference=silva.v4.fasta, processors=31, flip=F)
+
+       Output File Names: 
+       rawfile.trim.contigs.good.unique.align
+       rawfile.trim.contigs.good.unique.align.report
+       rawfile.trim.contigs.good.unique.flip.accnos
+
+
+mothur > summary.seqs(fasta=rawfile.trim.contigs.good.unique.align, count=rawfile.trim.contigs.good.count_table)
+
+		Start	End	NBases	Ambigs	Polymer	NumSeqs
+Minimum:	-1	-1	0	0	1	1
+2.5%-tile:	2	13423	290	0	4	3073
+25%-tile:	2	13423	291	0	4	30722
+Median: 	2	13423	291	0	4	61444
+75%-tile:	2	13423	291	0	5	92166
+97.5%-tile:	2	13423	291	0	5	119815
+Maximum:	13423	13423	297	0	32	122887
+Mean:	12.0407	13415	290.588	0	4.37558
+# of unique seqs:	11925
+total # of seqs:	122887
+
+Output File Names: 
+rawfile.trim.contigs.good.unique.summary
+
+mothur > screen.seqs(fasta=rawfile.trim.contigs.good.unique.align, count=rawfile.trim.contigs.good.count_table, summary=rawfile.trim.contigs.good.unique.summary, optimize=start-end-minlength, criteria=90)
+
+Output File Names: 
+rawfile.trim.contigs.good.unique.good.summary
+rawfile.trim.contigs.good.unique.good.align
+rawfile.trim.contigs.good.unique.bad.accnos
+rawfile.trim.contigs.good.good.count_table
+
+
+It took 2 secs to screen 11925 sequences.
+
+mothur > filter.seqs(fasta=rawfile.trim.contigs.good.unique.good.align, vertical=T, trump=.)
+
+Length of filtered alignment: 401
+Number of columns removed: 13022
+Length of the original alignment: 13423
+Number of sequences used to construct filter: 10167
+
+Output File Names: 
+rawfile.filter
+rawfile.trim.contigs.good.unique.good.filter.fasta
+
+
+mothur > unique.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.fasta, count=rawfile.trim.contigs.good.good.count_table)
+
+Output File Names: 
+rawfile.trim.contigs.good.unique.good.filter.count_table
+rawfile.trim.contigs.good.unique.good.filter.unique.fasta
+
+
+mothur > pre.cluster(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.fasta, count=rawfile.trim.contigs.good.unique.good.filter.count_table, diffs=2)
+
+Using 31 processors.
+
+Output File Names: 
+rawfile.trim.contigs.good.unique.good.filter.unique.precluster.fasta
+rawfile.trim.contigs.good.unique.good.filter.unique.precluster.count_table
+rawfile.trim.contigs.good.unique.good.filter.unique.precluster.Control_LZhang.map
+rawfile.trim.contigs.good.unique.good.filter.unique.precluster.RNAi_L_Zhang.map
+
+
+mothur > chimera.uchime(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.fasta, count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.count_table, dereplicate=t)
+
+Output File Names: 
+rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table
+rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.chimeras
+rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.accnos
+
+
+mothur > remove.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.fasta, accnos=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.accnos)
+Removed 61 sequences from your fasta file.
+
+Output File Names: 
+rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta
+
+
+mothur > classify.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table, reference=gg_13_5_97.fasta, taxonomy=gg_13_5_97.gg.tax, cutoff=80, probs=f)
+
+mothur > system(cp rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.abund.fasta rawfile.final.fasta)
+
+
+mothur > system(cp rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.abund.count_table rawfile.final.count_table)
+
+
+mothur > system(cp rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.gg.wang.pick.taxonomy rawfile.final.taxonomy)
+
+
+mothur > system(cp rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.gg.wang.pick.pick.taxonomy rawfile.final.taxonomy)
+
+
+mothur > cluster.split(fasta=rawfile.final.fasta, count=rawfile.final.count_table, taxonomy=rawfile.final.taxonomy, splitmethod=classify, taxlevel=4, processors=4)
+
+Output File Names: 
+rawfile.final.fasta.0.dist
+
+Output File Names: 
+rawfile.final.fasta.1.dist
+
+Output File Names: 
+rawfile.final.fasta.2.dist
+
+Output File Names: 
+rawfile.final.fasta.3.dist
+
+Output File Names: 
+rawfile.final.fasta.4.dist
+
+Output File Names: 
+rawfile.final.fasta.5.dist
+
+Output File Names: 
+rawfile.final.fasta.6.dist
+
+Output File Names: 
+rawfile.final.fasta.7.dist
+
+Output File Names: 
+rawfile.final.fasta.8.dist
+
+Output File Names: 
+rawfile.final.fasta.9.dist
+
+Output File Names: 
+rawfile.final.fasta.10.dist
+
+Output File Names: 
+rawfile.final.fasta.11.dist
+
+Output File Names: 
+rawfile.final.fasta.12.dist
+
+Output File Names: 
+rawfile.final.fasta.13.dist
+
+Output File Names: 
+rawfile.final.fasta.14.dist
+
+Output File Names: 
+rawfile.final.fasta.15.dist
+
+It took 0 to calculate the distances for 2 sequences.
+It took 0 seconds to split the distance file.
+rawfile.final.fasta.3.dist
+rawfile.final.fasta.4.dist
+rawfile.final.fasta.5.dist
+rawfile.final.fasta.15.dist
+
+Reading rawfile.final.fasta.15.dist
+rawfile.final.fasta.3.dist
+rawfile.final.fasta.4.dist
+rawfile.final.fasta.5.dist
+rawfile.final.fasta.15.dist
+
+Reading rawfile.final.fasta.7.dist
+rawfile.final.fasta.3.dist
+rawfile.final.fasta.4.dist
+rawfile.final.fasta.5.dist
+rawfile.final.fasta.15.dist
+
+Reading rawfile.final.fasta.14.dist
+
+
+mothur > make.shared(list=rawfile.final.an.unique_list.list, count=rawfile.final.count_table, label=0.03)
+0.03
+
+Output File Names: 
+rawfile.final.an.unique_list.shared
+rawfile.final.an.unique_list.Control_LZhang.rabund
+rawfile.final.an.unique_list.RNAi_L_Zhang.rabund
+
+
+mothur > system(cp rawfile.final.an.unique_list.shared rawfile.final.otu.shared)
+
+mothur > dist.seqs(fasta=rawfile.final.fasta, output=phylip, processors=31)
+
+Output File Names: 
+rawfile.final.phylip.dist
+
+mothur > clearcut(phylip=rawfile.final.phylip.dist)
+
+Output File Names: 
+rawfile.final.phylip.tre
+
+mothur > unifrac.unweighted(tree=rawfile.final.phylip.tre, count=rawfile.final.count_table, distance=lt, processors=31, random=F)
+
+Output File Names: 
+rawfile.final.phylip.uwsummary
+rawfile.final.phylip.tre1.unweighted.phylip.dist
+
+
+mothur > unifrac.weighted(tree=rawfile.final.phylip.tre, count=rawfile.final.count_table, distance=lt, processors=31, random=F)
+
+Output File Names: 
+rawfile.final.phylip.trewsummary
+rawfile.final.phylip.tre1.weighted.phylip.dist
+
+
+mothur > pcoa(phylip=rawfile.final.phylip.tre1.unweighted.phylip.dist)
+
+Output File Names: 
+rawfile.final.phylip.tre1.unweighted.phylip.pcoa.axes
+rawfile.final.phylip.tre1.unweighted.phylip.pcoa.loadings
+
+
+mothur > pcoa(phylip=rawfile.final.phylip.tre1.weighted.phylip.dist)
+
+Output File Names: 
+rawfile.final.phylip.tre1.weighted.phylip.pcoa.axes
+rawfile.final.phylip.tre1.weighted.phylip.pcoa.loadings
+
+
+mothur > get.oturep(count=rawfile.final.count_table, fasta=rawfile.final.fasta, list=rawfile.final.an.unique_list.list, method=abundance, label=0.03)
+0.03	56
+
+Output File Names: 
+rawfile.final.an.unique_list.0.03.rep.count_table
+rawfile.final.an.unique_list.0.03.rep.fasta
+
+
+Tue Aug 11 08:31:36 EDT 2015 Analysis Step 3: Phylogenetic tree approach, unifrac and pcoA plots DONE
+
+Tue Aug 11 08:31:36 EDT 2015 executing QIIME STEPS
+
+Tue Aug 11 08:31:36 EDT 2015 executing:biom summarize-table -i rawfile.final.otu.0.03.biom -o otu_table.biom.summary.txt
+
+Tue Aug 11 08:31:43 EDT 2015 Sample Control_LZhang is in mapping file and BIOM file
+
+Tue Aug 11 08:31:43 EDT 2015 Sample RNAi_L_Zhang is in mapping file and BIOM file
+
+Tue Aug 11 08:31:43 EDT 2015 executing:sort_otu_table.py -i rawfile.final.otu.0.03.biom -o rawfile.final.otu.0.03.sorted.biom -m MiSeq_qiime_Liping.mapping -s TreatmentGroup
+
+Tue Aug 11 08:31:46 EDT 2015 sub=57506
+
+Tue Aug 11 08:31:46 EDT 2015 executing:core_diversity_analyses.py -o qiime_div/ --suppress_alpha_diversity  -i rawfile.final.otu.0.03.sorted.biom -m MiSeq_qiime_Liping.mapping --nonphylogenetic_diversity -c "TreatmentGroup" -e 57506
+Traceback (most recent call last):
+  File "/home/ubuntu/qiime_software/qiime-1.8.0-release/bin/core_diversity_analyses.py", line 183, in <module>
+    main()    
+  File "/home/ubuntu/qiime_software/qiime-1.8.0-release/bin/core_diversity_analyses.py", line 180, in main
+    status_update_callback=status_update_callback)
+  File "/home/ubuntu/qiime_software/qiime-1.8.0-release/lib/qiime/workflow/core_diversity_analyses.py", line 227, in run_core_diversity_analyses
+    status_update_callback=status_update_callback)
+  File "/home/ubuntu/qiime_software/qiime-1.8.0-release/lib/qiime/workflow/downstream.py", line 187, in run_beta_diversity_through_plots
+    close_logger_on_success=close_logger_on_success)
+  File "/home/ubuntu/qiime_software/qiime-1.8.0-release/lib/qiime/workflow/util.py", line 116, in call_commands_serially
+    raise WorkflowError, msg
+qiime.workflow.util.WorkflowError: 
+
+*** ERROR RAISED DURING STEP: Make emperor plots, bray_curtis)
+Command run was:
+ make_emperor.py -i qiime_div//bdiv_even57506//bray_curtis_pc.txt -o qiime_div//bdiv_even57506//bray_curtis_emperor_pcoa_plot/ -m MiSeq_qiime_Liping.mapping 
+Command returned exit status: 2
+Stdout:
+
+Stderr
+Usage: make_emperor.py [options] {-i/--input_coords INPUT_COORDS -m/--map_fp MAP_FP}
+
+[] indicates optional input (order unimportant)
+{} indicates required input (order unimportant)
+
+This script automates the creation  of three-dimensional PCoA plots to be visualized with Emperor using Google Chrome.
+
+Example usage: 
+Print help message and exit
+ make_emperor.py -h
+
+Plot PCoA data: Visualize the a PCoA file colored using a corresponding mapping file:
+ make_emperor.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -o emperor_output
+
+Coloring by metadata mapping file: Additionally, using the supplied mapping file and a specific category or any combination of the available categories. When using the -b option, the user can specify the coloring for multiple header names, where each header is separated by a comma. The user can also combine mapping headers and color by the combined headers that are created by inserting an '&&' between the input header names. Color by 'Treatment' and by the result of concatenating the 'DOB' category and the 'Treatment' category:
+ make_emperor.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -b 'Treatment&&DOB,Treatment' -o emperor_colored_by
+
+PCoA plot with an explicit axis: Create a PCoA plot with an axis of the plot representing the 'DOB' of the samples. This option is useful when presenting a gradient from your metadata e. g. 'Time' or 'pH':
+ make_emperor.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -a DOB -o pcoa_dob
+
+PCoA plot with an explicit axis and using --missing_custom_axes_values: Create a PCoA plot with an axis of the plot representing the 'DOB' of the samples and define the position over the gradient of those samples missing a numeric value; in this case we are going to plot the samples in the value 20060000. You can select for each explicit axis which value you want to use for the missing values:
+ make_emperor.py -i unweighted_unifrac_pc.txt -m Fasting_Map_modified.txt -a DOB -o pcoa_dob_with_missing_custom_axes_values -x 'DOB:20060000'
+
+PCoA plot with an explicit axis and using --missing_custom_axes_values but setting different values based on another column: Create a PCoA plot with an axis of the plot representing the 'DOB' of the samples and defining the position over the gradient of those samples missing a numeric value but using as reference another column of the mapping file. In this case we are going to plot the samples that are Control on the Treatment column on 20080220 and on 20080240 those that are Fast
+ make_emperor.py -i unweighted_unifrac_pc.txt -m Fasting_Map_modified.txt -a DOB -o pcoa_dob_with_missing_custom_axes_with_multiple_values -x 'DOB:Treatment==Control=20080220' -x 'DOB:Treatment==Fast=20080240'
+
+Jackknifed principal coordinates analysis plot: Create a jackknifed PCoA plot (with confidence intervals for each sample) passing as the input a directory of coordinates files (where each file corresponds to a different OTU table) and use the standard deviation method to compute the dimensions of the ellipsoids surrounding each sample:
+ make_emperor.py -i unweighted_unifrac_pc -m Fasting_Map.txt -o jackknifed_pcoa -e sdev
+
+Jackknifed PCoA plot with a master coordinates file: Passing a master coordinates file (--master_pcoa) will display the ellipsoids centered by the samples in this file:
+ make_emperor.py -i unweighted_unifrac_pc -s unweighted_unifrac_pc/pcoa_unweighted_unifrac_rarefaction_110_5.txt -m Fasting_Map.txt -o jackknifed_with_master
+
+BiPlots: To see which taxa are the ten more prevalent in the different areas of the PCoA plot, you need to pass a summarized taxa file i. e. the output of summarize_taxa.py. Note that if the the '--taxa_fp' has fewer than 10 taxa, the script will default to use all.
+ make_emperor.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -t otu_table_L3.txt -o biplot
+
+BiPlots with extra options: To see which are the three most prevalent taxa and save the coordinates where these taxa are centered, you can use the -n (number of taxa to keep) and the --biplot_fp (output biplot file path) options.
+ make_emperor.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -t otu_table_L3.txt -o biplot_options -n 3 --biplot_fp biplot.txt
+
+Drawing connecting lines between samples: To draw lines betwen samples within a category use the '--add_vectors' option. For example to connect the lines by the 'Treatment' category.
+ make_emperor.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -o vectors --add_vectors Treatment
+
+Drawing connecting lines between samples with an explicit axis: To draw lines between samples within a category of the mapping file and have them sorted by a category that's explicitly represented in the 3D plot use the '--add_vectors' and the '-a' option.
+ make_emperor.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt --add_vectors Treatment,DOB -a DOB -o sorted_by_DOB
+
+Compare two coordinate files: To draw replicates of the same samples like for a procustes plot.
+ make_emperor.py -i compare -m Fasting_Map.txt --compare_plots -o comparison
+
+make_emperor.py: error: Due to the variation explained, Emperor could not plot at least 3 axes, check the input files to ensure that the percent explained is greater than 0.5 in at least three axes.
+
+
+ERROR when executing: core_diversity_analyses.py -o qiime_div/ --suppress_alpha_diversity  -i rawfile.final.otu.0.03.sorted.biom -m MiSeq_qiime_Liping.mapping --nonphylogenetic_diversity -c "TreatmentGroup" -e 57506

@@ -210,7 +210,7 @@ def ensure_file_format_is_ok( fname ):
     return fname
 
 def get_reference_DBs( dbs ):
-    fname = 'https://s3.amazonaws.com/nephele2-ref-dbs/' + dbs
+    fname = '' + dbs
     if not os.path.isfile(os.path.basename(fname)):
         wget(fname)
         archive = tarfile.open(dbs, 'r:gz')
