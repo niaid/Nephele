@@ -24,24 +24,7 @@ cp anadama_products/*merged_meta.biom_maaslin.tsv $out/
 cp anadama_products/*merged_meta.biom $out/
 
 
-# cp -R final.fasta $out/
-# cp -R otu_table.biom $out/
-# cp -R tree.tre $out/
-# cp -R subsampling_summary.txt $out/
-# cp -R jack/weighted_unifrac/upgma_cmp/jackknife_named_nodes_weighted.pdf $out/
-# cp -R jack/unweighted_unifrac/upgma_cmp/jackknife_named_nodes_unweighted.pdf $out/
-# cp -R core_diversity $out/
-# cp -R OTU_Heatmap $out/
-# cp -R *metastats $out/
-# cp -R *lefse $out/
-# cp -R *shared $out/
-# cp -R *_with_HMPDACC_v13 $out/
-# cp -R *_with_HMPDACC_v35 $out/
 
-# cp -R heat_map $out/
-# cp -R otus $out/
-# cp -R joined_otus $out/
-# cp -R sl_out $out/
 
 # logfile
 if [ -f logfile.txt ];
@@ -60,11 +43,6 @@ zip -r ../SelectedFiles.zip *
 mv ../SelectedFiles.zip ../PipelineResults.zip
 chmod 777 ../PipelineResults.zip
 
-# philip start
-# cd ..
-# ./push_to_aws.py
-# sudo shutdown -h "now"
-# philip end
 
 
 cd ..

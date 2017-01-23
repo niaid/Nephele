@@ -14,6 +14,7 @@ __credits__ = ["Alex Levitsky"]
 __license__ = ""
 __version__ = "1.0.1-dev"
 __maintainer__ = "Alex Levitsky"
+__email__ = "levitskyaa@niaid.nih.gov"
 __status__ = "Development"
 
 import sys, os, random, time, glob
