@@ -338,6 +338,7 @@ def main():
    # get neccessary files from s3
    for res_file in ['otu_table_psn_v13.biom','otu_table_psn_v35.biom','v13_map_uniquebyPSN.txt','v35_map_uniquebyPSN.txt']:
       if not( os.path.isfile('./'+res_file) ):
+         syscall('wget -q '+res_file)
    send2log( 'Work folder '+work_dir+' contains:' , log_file )
    syscall( 'ls >> '+log_file )
 

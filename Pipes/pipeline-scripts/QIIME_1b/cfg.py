@@ -40,6 +40,11 @@ DEFAULT_OTU_PARAMS_FNAME = 'otus_params.txt'
 DEFAULT_C_OPT = 'TreatmentGroup'
 PROCESS_SFF_OUT_DIR = 'process_sff_out'
 CHIMERA_FILE = 'CHIMERAS_FOUND.txt'
+HMP_OUT_DIR = 'HMP_compare_results'
+PHYLOSEQ_IMAGES_DIR = 'taxa_plots_and_heatmaps'
+HMP_DB_TAR = 'HMP_ref_dbs.tar.gz'
+PICRUST_DIR = 'PICRUSt_data'
+
 
 # this gets used to define what's in the ALL_RESULTS_ZIP_FILE_NAME archive
 #               COMPUTE_CORE_MICROBIOME_OUT_DIR,
@@ -50,40 +55,44 @@ all_results = [JOINED_OUTS_OUT_DIR,
                HEATMAP_OUT_DIR,
                JACKKNIFED_OUT_DIR,
                COLLATED_OUT_DIR,
+               HMP_OUT_DIR,
                'validate_mapping_out_dir' ] # config_fname
 FILES_TO_CP_TO_S3 = ('logfile.txt','WorkFolder.zip','PipelineResults.zip')
 
+
 QIIME_SW_VERS  = ['QIIME 1.9.1: Quantitative Insights Into Microbial Ecology.',
                   'UCHIME 4.2',
-                  'Mothur v.1.36.1' ]
+                  'Mothur v.1.38.1',
+                  'SORTMERNA v 2.0' ]
 
-DB_V_TO_REF_FASTA_FILE = dict()
-DB_V_TO_REF_FASTA_FILE['Greengenes_94'] = '/home/ubuntu/ref_dbs/rep_set/94_otus.fasta'
-DB_V_TO_REF_FASTA_FILE['Greengenes_97'] = '/home/ubuntu/ref_dbs/rep_set/97_otus.fasta'
-DB_V_TO_REF_FASTA_FILE['Greengenes_99'] = '/home/ubuntu/ref_dbs/rep_set/99_otus.fasta'
-DB_V_TO_REF_FASTA_FILE['SILVA_97'] = '/home/ubuntu/ref_dbs/silva/SILVA123_QIIME_release/rep_set/rep_set_16S_only/97/97_otus_16S.fasta'
-DB_V_TO_REF_FASTA_FILE['SILVA_99'] = '/home/ubuntu/ref_dbs/silva/SILVA123_QIIME_release/rep_set/rep_set_16S_only/99/99_otus_16S.fasta'
-DB_V_TO_REF_FASTA_FILE['ITS_97'] = '/home/ubuntu/ref_dbs/its_12_11_otus/rep_set/97_otus.fasta'
-DB_V_TO_REF_FASTA_FILE['ITS_99'] = '/home/ubuntu/ref_dbs/its_12_11_otus/rep_set/99_otus.fasta'
+HMP_REF_FASTA_FILE = dict()
+HMP_REF_FASTA_FILE['Greengenes_97'] = 'HMP_ref_dbs/97_otus.fasta'
+HMP_REF_FASTA_FILE['Greengenes_99'] = 'HMP_ref_dbs/99_otus.fasta'
+HMP_REF_FASTA_FILE['SILVA_97'] = 'HMP_ref_dbs/silva_97_otus_16S.fasta'
+HMP_REF_FASTA_FILE['SILVA_99'] = 'HMP_ref_dbs/silva_99_otus_16S.fasta'
+HMP_REF_FASTA_FILE['ITS_97'] = 'HMP_ref_dbs/ITS_97_otus.fasta'
+HMP_REF_FASTA_FILE['ITS_99'] = 'HMP_ref_dbs/ITS_99_otus.fasta'
 
-DB_V_TO_REF_TAXONOMY_FILE = dict()
-DB_V_TO_REF_TAXONOMY_FILE['Greengenes_94'] = '/home/ubuntu/ref_dbs/taxonomy/94_otu_taxonomy.txt'
-DB_V_TO_REF_TAXONOMY_FILE['Greengenes_97'] = '/home/ubuntu/ref_dbs/taxonomy/97_otu_taxonomy.txt'
-DB_V_TO_REF_TAXONOMY_FILE['Greengenes_99'] = '/home/ubuntu/ref_dbs/taxonomy/99_otu_taxonomy.txt'
-DB_V_TO_REF_TAXONOMY_FILE['SILVA_97'] = '/home/ubuntu/ref_dbs/silva/SILVA123_QIIME_release/taxonomy/16S_only/97/taxonomy_7_levels.txt'
-DB_V_TO_REF_TAXONOMY_FILE['SILVA_99'] = '/home/ubuntu/ref_dbs/silva/SILVA123_QIIME_release/taxonomy/16S_only/99/taxonomy_7_levels.txt'
-DB_V_TO_REF_TAXONOMY_FILE['ITS_97'] = '/home/ubuntu/ref_dbs/its_12_11_otus/taxonomy/97_otu_taxonomy.txt'
-DB_V_TO_REF_TAXONOMY_FILE['ITS_99'] = '/home/ubuntu/ref_dbs/its_12_11_otus/taxonomy/99_otu_taxonomy.txt'
+HMP_REF_TAXONOMY_FILE = dict()
+HMP_REF_TAXONOMY_FILE['Greengenes_97'] = 'HMP_ref_dbs/97_otu_taxonomy.txt'
+HMP_REF_TAXONOMY_FILE['Greengenes_99'] = 'HMP_ref_dbs/99_otu_taxonomy.txt'
+HMP_REF_TAXONOMY_FILE['SILVA_97'] = 'HMP_ref_dbs/silva_97_taxonomy_7_levels.txt'
+HMP_REF_TAXONOMY_FILE['SILVA_99'] = 'HMP_ref_dbs/silva_99_taxonomy_7_levels.txt'
+HMP_REF_TAXONOMY_FILE['ITS_97'] = 'HMP_ref_dbs/ITS_97_otu_taxonomy.txt'
+HMP_REF_TAXONOMY_FILE['ITS_99'] = 'HMP_ref_dbs/ITS_99_otu_taxonomy.txt'
 
-DB_V_TO_TREE_FILE = dict()
-DB_V_TO_TREE_FILE['Greengenes_94'] = '/home/ubuntu/ref_dbs/trees/94_otus.tree'
-DB_V_TO_TREE_FILE['Greengenes_97'] = '/home/ubuntu/ref_dbs/trees/97_otus.tree'
-DB_V_TO_TREE_FILE['Greengenes_99'] = '/home/ubuntu/ref_dbs/trees/99_otus.tree'
-DB_V_TO_TREE_FILE['SILVA_97'] = '/home/ubuntu/ref_dbs/silva/SILVA123_QIIME_release/trees/97/97_otus.tre'
-DB_V_TO_TREE_FILE['SILVA_99'] = '/home/ubuntu/ref_dbs/silva/SILVA123_QIIME_release/trees/99/99_otus.tre'
-DB_V_TO_TREE_FILE['ITS_97'] = '/home/ubuntu/ref_dbs/trees/97_otus.tree'
-DB_V_TO_TREE_FILE['ITS_99'] = '/home/ubuntu/ref_dbs/trees/99_otus.tree'
+HMP_TREE_FILE = dict()
+HMP_TREE_FILE['Greengenes_97'] = 'HMP_ref_dbs/97_otus.tree'
+HMP_TREE_FILE['Greengenes_99'] = 'HMP_ref_dbs/99_otus.tree'
+HMP_TREE_FILE['SILVA_97'] = 'HMP_ref_dbs/silva_97_otus.tre'
+HMP_TREE_FILE['SILVA_99'] = 'HMP_ref_dbs/silva_99_otus.tre'
+HMP_TREE_FILE['ITS_97'] = 'HMP_ref_dbs/97_otus.tree'
+HMP_TREE_FILE['ITS_99'] = 'HMP_ref_dbs/99_otus.tree'
 
 
 # often pipes will output a warning, and I'd like this not to clutter up logs
 WARNINGS_LOG_NAME = 'warnings.txt'
+LOG_FILE = 'logfile.txt'
+
+
+
