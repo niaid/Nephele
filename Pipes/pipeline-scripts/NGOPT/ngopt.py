@@ -14,6 +14,7 @@ __credits__ = ["Alex Levitsky"]
 __license__ = ""
 __version__ = "1.0.1-dev"
 __maintainer__ = "Alex Levitsky"
+__email__ = "levitskyaa@niaid.nih.gov"
 __status__ = "Development"
 
 import sys, os, random, time, glob
@@ -181,15 +182,6 @@ def main():
       send2log( w, log_file )
 
    if 'YES'==config['BLAST_STEP']:
-      # BLAST step
-      #send2log( 'Executing:'+cmd, log_file)
-      #w=syscall(cmd)
-      #send2log( w, log_file )
-      #cmd ='blast-2.2.29+/bin/blastx -db BLAST_NR/nr'\
-      #      + ' -out NTCC8325out.final.scaffolds.blastn_t4x.txt'\
-      #      + ' -query NTCC8325out.final.scaffolds.fasta'\
-      #      + ' -num_threads '+config['NUM_OF_PROC']+' -outfmt 6'
-
       cmd ='./blast2nr.sh '+config['PREFIX']+' '+config['NUM_OF_PROC']
       send2log( 'Executing:'+cmd, log_file)
       w=syscall(cmd)
