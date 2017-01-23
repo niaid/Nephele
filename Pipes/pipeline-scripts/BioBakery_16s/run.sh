@@ -6,6 +6,7 @@ fi
 
 # check map file format and convert if necessary
 cp config.csv config.csv.bak && \
+
 chmod a+x mapcheck.sh && \
 ./mapcheck.sh config.csv >config.csv.tmp && \
 mv config.csv.tmp config.csv && \

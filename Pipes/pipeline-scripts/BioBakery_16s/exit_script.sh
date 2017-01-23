@@ -1,5 +1,5 @@
 # zip installation
-sudo apt-get update && sudo apt-get install --yes zip
+#sudo apt-get update && sudo apt-get install --yes zip
 
 # Executables removal
 # rm -rf ./arguments.json
