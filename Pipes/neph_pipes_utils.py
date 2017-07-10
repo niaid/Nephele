@@ -1863,9 +1863,9 @@ def gen_ID_Treatment_map(fname):
             l = line.split("\t")
             if line.startswith('#'):
                 if 'TreatmentGroup' not in l:
-                    self.log.error(neph_errors.NO_TREATMENT_GROUP)
+                    log.error(neph_errors.NO_TREATMENT_GROUP)
                     #log.info("There's no TreatmentGroup in the Headline of the Mapping file!")
-                    self.do_exit_operations()
+                    #do_exit_operations()
                 else:
                     location_of_treatment_col = l.index('TreatmentGroup')
             else:

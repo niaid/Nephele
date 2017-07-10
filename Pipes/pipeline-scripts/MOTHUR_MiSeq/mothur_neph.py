@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+import tarfile
+import subprocess
+import shlex
 import json
 import zipfile
 import os
@@ -9,10 +12,6 @@ import logging
 import multiprocessing
 import sys
 from sh import head, mv, cp, mkdir, glob, zip, unzip, gunzip, grep, wget, tar
-import tarfile
-import subprocess
-import shlex
-import shutil
 from collections import namedtuple
 import neph_errors
 
@@ -88,7 +87,7 @@ class Cfg:
     FINAL_OTU_FIXED = 'final.otu.0.03.tax.table.txt'
 
     FINAL_TX_SABUND = 'final.tx.sabund'
-    FINAL_TX_RABUND  = 'final.tx.rabund'
+    FINAL_TX_RABUND = 'final.tx.rabund'
     FINAL_TX_LIST = 'final.tx.list'
     FINAL_TX_SHARED = 'final.tx.shared'
     FINAL_PHYLOTYPE_SHARED = 'final.phylotype.shared'
@@ -98,7 +97,7 @@ class Cfg:
 
     FINAL_PHYLIP_DIST = 'final.phylip.dist'
 
-    FINAL_PHYLIP_TRE= 'final.phylip.tre'
+    FINAL_PHYLIP_TRE = 'final.phylip.tre'
     FINAL_PHYLIP_UWSMRY = 'final.phylip.uwsummary'
     FINAL_PHYLIP_UNWEIGHTED_DIST = 'final.phylip.tre1.unweighted.phylip.dist'
 
@@ -438,7 +437,7 @@ class Mothur_MiSeq_PE:
             # HMP STARTS HERE
             elif key == 'COMP_WITH_DACC':
                 if value.upper() not in True_false_dict:
-                    log.info('Value for COMP_WITH_DACC not valid.'.format(value))
+                    log.info('Value for COMP_WITH_DACC:{0} not valid.'.format(value))
                     do_end_operations()
                     exit(1)
                 else:
@@ -475,17 +474,16 @@ class Mothur_MiSeq_PE:
             ensure_file_exists(row['ForwardFastqFile'])
             ensure_file_exists(row['ReverseFastqFile'])
             s = Sample(row['#SampleID'],
-                        row['BarcodeSequence'],
-                        row['LinkerPrimerSequence'],
-                        row['ForwardFastqFile'],
-                        row['ReverseFastqFile'],
-                        row['TreatmentGroup'],
-                        row['Description']) #                         row['ReversePrimer'],
+                       row['BarcodeSequence'],
+                       row['LinkerPrimerSequence'],
+                       row['ForwardFastqFile'],
+                       row['ReverseFastqFile'],
+                       row['TreatmentGroup'],
+                       row['Description'])
             samples.append(s)
 
-        if len(samples ) == 0:
+        if len(samples) == 0:
             log.error(neph_errors.NO_SAMPLES_IN_MAPPING_FILE)
-            #log.error('Unable to proceed, no samples in mapping file {0}.'.format(fname))
             do_end_operations()
             exit(1)
         return samples
@@ -507,7 +505,7 @@ class Mothur_MiSeq_PE:
     @staticmethod
     def gen_make_contigs_cmd():
         return mothurize('make.contigs', ['file=' + Cfg.MAKE_FILE_CMD_OUTPUT,
-                                           'processors=' + str(multiprocessing.cpu_count())])
+                                          'processors=' + str(multiprocessing.cpu_count())])
     @staticmethod
     def gen_summary_seqs_cmd(f_to_summarize, counts_file=None):
         # gens:
@@ -530,17 +528,17 @@ class Mothur_MiSeq_PE:
         # fileList.paired.trim.contigs.good.unique.good.align
         # fileList.paired.trim.contigs.good.unique.bad.accnos
         # fileList.paired.trim.contigs.good.unique.good.summary
-        return mothurize('screen.seqs', ['fasta=' + fa,
-                                          'count=' + count,
-                                          'summary=' + summary,
-                                          'optimize=' + opt,
-                                          'criteria=' + str(criteria)])
+        return mothurize('screen.seqs', ['fasta='+fa,
+                                         'count='+count,
+                                         'summary='+summary,
+                                         'optimize='+opt,
+                                         'criteria='+str(criteria)])
     @staticmethod
     def gen_screen_seqs_cmd(maxlength):
-        return mothurize('screen.seqs', ['fasta=' + Cfg.MAKE_CONTIG_CMD_OUTPUT,
-                                          'group=' + Cfg.GROUPS_FNAME,
-                                          'maxambig=' + str(Cfg.MAXAMBIG),
-                                          'maxlength=' + str(maxlength)])
+        return mothurize('screen.seqs', ['fasta='+Cfg.MAKE_CONTIG_CMD_OUTPUT,
+                                         'group='+Cfg.GROUPS_FNAME,
+                                         'maxambig='+str(Cfg.MAXAMBIG),
+                                         'maxlength='+str(maxlength)])
 
     @staticmethod
     def gen_unique_seqs_cmd(fasta, counts_file=None):
@@ -565,7 +563,8 @@ class Mothur_MiSeq_PE:
         # could also do:
         # grep '>' fileList.paired.trim.contigs.good.fasta | wc -l
         return mothurize('count.seqs', ['name=' + Cfg.UNIQUE_SEQS_OUT_NAMES,
-                                         'group=' + Cfg.GOOD_GROUPS_GROUPS_FNAME])
+                                        'group=' + Cfg.GOOD_GROUPS_GROUPS_FNAME])
+
     @staticmethod
     def gen_align_seqs_cmd(seqs_to_align, ref):
         # generates : (I think)
@@ -585,10 +584,10 @@ class Mothur_MiSeq_PE:
                 if line.startswith('Median:'):
                     a = line.split("\t")
                     if len(a) > 3:
-                        return a[1],a[2]
+                        return a[1], a[2]
                     else:
                         log.error(neph_errors.SUMMARY_SEQS_ERROR)
-                        #log.error("The Output of summary.seqs seems to be wrong")
+
     @staticmethod
     def gen_pcr_seqs_cmnd(start, end):
         # gens PCR_OUT_FNAME
@@ -604,16 +603,16 @@ class Mothur_MiSeq_PE:
         # mothur > filter.seqs(fasta=rawfile.trim.contigs.good.unique.good.align, vertical=T, trump=.)
         # gens fileList.paired.trim.contigs.good.unique.good.filter.fasta
         return mothurize('filter.seqs', ['fasta=' + fa,
-                                           'vertical=T',
-                                           'trump=.'])
+                                         'vertical=T',
+                                         'trump=.'])
     @staticmethod
     def gen_pre_cluster_cmd(fasta, counts_file):
         # gens:
         # fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.count_table
         # fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.fasta
         return mothurize('pre.cluster', ['fasta='+ fasta,
-                                          'count=' + counts_file,
-                                          'diffs=2'])  # hard coded at 2
+                                         'count=' + counts_file,
+                                         'diffs=2'])  # hard coded at 2
     @staticmethod
     def gen_chimera_vsearch(fasta, counts_file):
         # gens:
@@ -630,13 +629,13 @@ class Mothur_MiSeq_PE:
         if tax is None:
             # gens
             # fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta
-            return mothurize('remove.seqs',['fasta=' + fasta,
+            return mothurize('remove.seqs', ['fasta=' + fasta,
                                              'accnos=' + accnos])
         elif fasta is None:
             # gens
             # fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.gg.wang.pick.pick.taxonomy
-            return mothurize('remove.seqs',['taxonomy=' + tax,
-                                            'accnos=' + accnos])
+            return mothurize('remove.seqs', ['taxonomy=' + tax,
+                                             'accnos=' + accnos])
 
     # mothur > classify.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.vsearch.pick.count_table, reference=gg_13_5_97.fasta, taxonomy=gg_13_5_97.gg.tax, cutoff=80, probs=f)
     @staticmethod
@@ -647,38 +646,39 @@ class Mothur_MiSeq_PE:
         #     pick.gg.wang.tax.summary
         # fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.\
         #     pick.gg.wang.flip.accnos
-        return mothurize('classify.seqs',['fasta=' + fasta,
+        return mothurize('classify.seqs', ['fasta=' + fasta,
                                            'count=' + counts_file,
                                            'reference=' + reference,
                                            'taxonomy=' + taxonomy,
                                            'cutoff=' + str(Cfg.CLASSIFY_SEQS_CUTOFF),
                                            'probs=f',
                                            'processors=' + str(multiprocessing.cpu_count())])
+
     @staticmethod
     def gen_rm_lineage_cmd(fasta, counts_file, taxonomy):
         # gens
         # fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.gg.wang.pick.taxonomy
         # fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta
         # fileList.paired.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table
-        return mothurize('remove.lineage',['fasta=' + fasta,
-                                           'count=' + counts_file,
-                                           'taxonomy=' + taxonomy,
-                                           'taxon=Chloroplast-Mitochondria-unknown-Archaea-Eukaryota'])
+        return mothurize('remove.lineage', ['fasta=' + fasta,
+                                            'count=' + counts_file,
+                                            'taxonomy=' + taxonomy,
+                                            'taxon=Chloroplast-Mitochondria-unknown-Archaea-Eukaryota'])
     @staticmethod
     def gen_split_abund(fasta, counts_file, cutoff):
-        return mothurize('split.abund',['fasta=' + fasta,
-                                        'count=' + counts_file,
-                                        'cutoff=' + str(cutoff),
-                                        'accnos=true'])
+        return mothurize('split.abund', ['fasta=' + fasta,
+                                         'count=' + counts_file,
+                                         'cutoff=' + str(cutoff),
+                                         'accnos=true'])
 
     @staticmethod
     def gen_cluster_split(fasta, counts_file, tax):
-        return mothurize('cluster.split',['fasta=' + fasta,
-                                          'count=' + counts_file,
-                                          'taxonomy=' + tax,
-                                          'splitmethod=classify',
-                                          'taxlevel=4',
-                                          'processors='  + str(multiprocessing.cpu_count())])
+        return mothurize('cluster.split', ['fasta=' + fasta,
+                                           'count=' + counts_file,
+                                           'taxonomy=' + tax,
+                                           'splitmethod=classify',
+                                           'taxlevel=4',
+                                           'processors=' + str(multiprocessing.cpu_count())])
     @staticmethod
     def gen_make_shared(l, counts_file, label):
         # final.tx.shared
@@ -689,7 +689,7 @@ class Mothur_MiSeq_PE:
     @staticmethod
     def gen_metastats(shared, design_file):
         return mothurize('metastats',['shared=' + shared,
-                                       'design=' + design_file])
+                                      'design=' + design_file])
 
 # classify.otu(
 # list=stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pds.wang.pick.pick.tx.list,
@@ -706,9 +706,9 @@ class Mothur_MiSeq_PE:
     @staticmethod
     def gen_classify_otus_cmd(list_file, counts_file, tax, label=None):
         return mothurize('classify.otu', ['list=' + list_file,
-                                           'count=' + counts_file,
-                                           'taxonomy=' + tax,
-                                           'label=' + Cfg.POINT_ZERO_THREE_LABL])
+                                          'count=' + counts_file,
+                                          'taxonomy=' + tax,
+                                          'label=' + Cfg.POINT_ZERO_THREE_LABL])
 
     # def gen_classify_otus_cmd(list_file, counts_file, tax, label=None, ref_taxonomy=None):
     #     if ref_taxonomy is not None:
@@ -736,18 +736,18 @@ class Mothur_MiSeq_PE:
         # and
         # final.phylotype.thetayc.1.tre
         # final.phylotype.jclass.1.tre
-        return mothurize('tree.shared',['shared=' + shared,
-                                        'calc=thetayc-jclass'])
+        return mothurize('tree.shared', ['shared=' + shared,
+                                         'calc=thetayc-jclass'])
     @staticmethod
     def gen_summary_single_cmd(shared):
-        return mothurize('summary.single',['shared='+shared])
+        return mothurize('summary.single', ['shared='+shared])
 
     @staticmethod
     def gen_make_lefse_cmnd(shared, design, constaxonomy):
         # gens final.otu.0.03.lefse
-        return mothurize('make.lefse',['shared=' + shared,
-                                       'design=' + Cfg.DESIGN_FILE,
-                                       'constaxonomy=' + constaxonomy])
+        return mothurize('make.lefse', ['shared=' + shared,
+                                        'design=' + Cfg.DESIGN_FILE,
+                                        'constaxonomy=' + constaxonomy])
     @staticmethod
     def make_design_file(map_file):
         sample_to_treatmnt = dict()
@@ -766,9 +766,9 @@ class Mothur_MiSeq_PE:
         #     self.log_file('problem')
 
         with open(Cfg.DESIGN_FILE, 'w') as f_out:
-            print("\t".join(['SampleID','TreatmentGroup']), file=f_out)
+            print("\t".join(['SampleID', 'TreatmentGroup']), file=f_out)
             for k, v in sample_to_treatmnt.items():
-                print("\t".join([k,v]), file=f_out)
+                print("\t".join([k, v]), file=f_out)
 
     @staticmethod
     def gen_make_biom(shared, constaxonomy, otu_map, ref_taxonomy):
@@ -793,7 +793,7 @@ class Mothur_MiSeq_PE:
         # final.tx.sabund
         # final.tx.rabund
         # final.tx.list
-        return  mothurize('phylotype',['taxonomy=' + taxonomy])
+        return  mothurize('phylotype', ['taxonomy=' + taxonomy])
 
     @staticmethod
     def gen_dist_seqs(fasta):

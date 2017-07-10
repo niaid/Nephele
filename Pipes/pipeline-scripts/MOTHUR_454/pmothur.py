@@ -5,9 +5,9 @@
 # Project:   MOTHUR 16S pipeline
 # Language:  Python 2.7
 # Authors:   Mariam Quinones, Alex Levitsky
-# History:   April 2014 Start of development, October 2014 revision 3 
+# History:   April 2014 Start of development, October 2014 revision 3
 ##############################################################
-
+import re
 import sys, os, random, time, glob
 syscall = lambda cmd: (os.popen(cmd).read()).rstrip("\n")
 
@@ -346,7 +346,7 @@ if 'IONTORRENT_SFF_FILE' == config['INPUT_TYPE']:
    send2log('Processing Step 1: Extract Reads from raw sff file (IonTorrent) and trim to a minimum length STARTED', log_file)
 
    # create list of *.sff files
-   w=syscall('ls *.sff')  
+   w=syscall('ls *.sff')
    sff_list=w.split()
    file_str='-'.join(sff_list)
    # print file_str
@@ -386,7 +386,7 @@ if 'IONTORRENT_SFF_FILE' == config['INPUT_TYPE']:
              +', processors='+num_proc+', order=I'\
              +', lookup=LookUp_Titanium.pat)',mothur_batch)
 
-   # mothur "#trim.seqs(fasta=rawfile.shhh.fasta, name=rawfile.shhh.names, oligos=oligo.txt, pdiffs=1, bdiffs=1, maxhomop=8, 
+   # mothur "#trim.seqs(fasta=rawfile.shhh.fasta, name=rawfile.shhh.names, oligos=oligo.txt, pdiffs=1, bdiffs=1, maxhomop=8,
    # minlength=200, flip=T, processors=8, keepfirst=430, maxambig=0)"
    add2mothur_cmd('trim.seqs(fasta=rawfile.shhh.fasta'\
              +', name=rawfile.shhh.names'\
@@ -412,7 +412,7 @@ if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config
    cmd="echo '# Processing Step 2: Clusters redundant sequences and aligns to the SILVA based reference alignment provided' >"+mothur_batch
    exec_sys(cmd)
 
-   if config['COMP_WITH_DACC'] == 'YES':      
+   if config['COMP_WITH_DACC'] == 'YES':
       cmd = gen_compare_to_HMP_cmd('rawfile.fasta',
                                    config['BODY_SITE'],
                                    config['MAP_FILE'],
@@ -422,7 +422,7 @@ if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config
       send2log( 'executing:'+cmd, log_file )
       exec_sys(cmd)
 
-   
+
    # unique.seqs(fasta=rawfile.shhh.trim.fasta, name=rawfile.shhh.trim.names)
    add2mothur_cmd('unique.seqs(fasta=rawfile.shhh.trim.fasta, name=rawfile.shhh.trim.names)',mothur_batch)
 
@@ -541,7 +541,7 @@ if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config
    # mothur "#make.shared(list=rawfile.final.an.list, group=rawfile.final.groups, label=0.03)"
    add2mothur_cmd('make.shared(list=rawfile.final.an.list, group=rawfile.final.groups, label=0.03)',mothur_batch)
 
-   # mothur "#classify.otu(list=rawfile.final.an.list, name=rawfile.final.names, taxonomy=rawfile.final.taxonomy, 
+   # mothur "#classify.otu(list=rawfile.final.an.list, name=rawfile.final.names, taxonomy=rawfile.final.taxonomy,
    # group=rawfile.final.groups, label=0.03, reftaxonomy=/bcbb/quinones/greengenes/gg_13_5_otus/gg_13_5_formothur/gg_13_5_97.gg.tax)"
    add2mothur_cmd('classify.otu(list=rawfile.final.an.list, name=rawfile.final.names, taxonomy=rawfile.final.taxonomy,'\
          +' group=rawfile.final.groups, label=0.03, reftaxonomy=gg_13_5_97.gg.tax)',mothur_batch)
@@ -552,7 +552,7 @@ if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config
    # mothur "#summary.single(shared=rawfile.final.an.shared)"
    add2mothur_cmd('summary.single(shared=rawfile.final.an.shared)',mothur_batch)
 
-   # mothur "#rarefaction.single(shared=rawfile.final.an.shared)" 
+   # mothur "#rarefaction.single(shared=rawfile.final.an.shared)"
    add2mothur_cmd('rarefaction.single(shared=rawfile.final.an.shared)',mothur_batch)
 
    #metastats needs the design file from user
@@ -584,7 +584,7 @@ if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config
            +' design='+config['DESIGN_FILE']+', constaxonomy=rawfile.final.an.0.03.cons.taxonomy)',mothur_batch)
 
    # make biom for picrust
-   # mothur "#make.biom(shared=rawfile.final.an.shared, label=0.03, reftaxonomy=/bcbb/quinones/greengenes/gg_13_5_otus/gg_13_5_formothur/gg_13_5_97.gg.tax, 
+   # mothur "#make.biom(shared=rawfile.final.an.shared, label=0.03, reftaxonomy=/bcbb/quinones/greengenes/gg_13_5_otus/gg_13_5_formothur/gg_13_5_97.gg.tax,
    # constaxonomy=rawfile.final.an.0.03.cons.taxonomy"
    add2mothur_cmd('make.biom(shared=rawfile.final.an.shared, label=0.03, reftaxonomy=gg_13_5_97.gg.tax,'\
         +' constaxonomy=rawfile.final.an.0.03.cons.taxonomy)',mothur_batch)
@@ -611,7 +611,7 @@ if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config
       exec_sys(cmd)
 
 
-   # core_diversity_analyses.py -o core_diversity/ -i rawfile.final.an.0.03.biom -m Iontorrent_demo.mapping 
+   # core_diversity_analyses.py -o core_diversity/ -i rawfile.final.an.0.03.biom -m Iontorrent_demo.mapping
    # -e 1000 --nonphylogenetic_diversity -c "Treatment"
 
    if os.path.isfile( config['MAP_FILE'] ):
@@ -643,7 +643,7 @@ if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config
    exec_sys(cmd)
 
    # mothur "#phylotype(taxonomy=rawfile.final.taxonomy)"
-   add2mothur_cmd('phylotype(taxonomy=rawfile.final.taxonomy)',mothur_batch)                                                                                                                          
+   add2mothur_cmd('phylotype(taxonomy=rawfile.final.taxonomy)',mothur_batch)
 
    # mothur "#count.seqs(name=rawfile.final.names, group=rawfile.final.groups)"
    add2mothur_cmd('count.seqs(name=rawfile.final.names, group=rawfile.final.groups)',mothur_batch)
@@ -654,7 +654,7 @@ if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config
    # mothur "#system(cp rawfile.final.tx.shared rawfile.final.phylotype.shared)"
    add2mothur_cmd('system(cp rawfile.final.tx.shared rawfile.final.phylotype.shared)',mothur_batch)
 
-   # mothur "#classify.otu(list=rawfile.final.tx.list, count=rawfile.final.count_table, 
+   # mothur "#classify.otu(list=rawfile.final.tx.list, count=rawfile.final.count_table,
    # taxonomy=rawfile.final.taxonomy, label=1, count=rawfile.final.count_table)"
    add2mothur_cmd('classify.otu(list=rawfile.final.tx.list, count=rawfile.final.count_table,'\
         +' taxonomy=rawfile.final.taxonomy, label=1, count=rawfile.final.count_table)',mothur_batch)
@@ -680,12 +680,12 @@ if ('454_SFF_FILE' == config['INPUT_TYPE'] ) or ('IONTORRENT_SFF_FILE' == config
    add2mothur_cmd('clearcut(phylip=rawfile.final.phylip.dist)',mothur_batch)
 
    # unifrac.unweighted(tree=rawfile.final.phylip.tre, name=rawfile.final.names, group=rawfile.final.groups, distance=lt, processors=8, random=F)
-   #mothur "#unifrac.unweighted(tree=rawfile.final.phylip.tre, name=rawfile.final.names, 
+   #mothur "#unifrac.unweighted(tree=rawfile.final.phylip.tre, name=rawfile.final.names,
    # group=rawfile.final.groups, distance=lt, processors=8, random=F)"
    add2mothur_cmd('unifrac.unweighted(tree=rawfile.final.phylip.tre, name=rawfile.final.names,'\
          +' group=rawfile.final.groups, distance=lt, processors='+num_proc+', random=F)',mothur_batch)
 
-   # mothur "#unifrac.weighted(tree=rawfile.final.phylip.tre, name=rawfile.final.names, 
+   # mothur "#unifrac.weighted(tree=rawfile.final.phylip.tre, name=rawfile.final.names,
    # group=rawfile.final.groups, distance=lt, processors=8, random=F)"
    add2mothur_cmd('unifrac.weighted(tree=rawfile.final.phylip.tre, name=rawfile.final.names,'\
          + 'group=rawfile.final.groups, distance=lt, processors='+num_proc+', random=F)',mothur_batch)
@@ -784,7 +784,7 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    #   # use generated from map file stability file
    #   syscall('mv stability_file.tmp rawfile.files')
    #config['STABILITY_FILE']='rawfile.files'
- 
+
    # create design file from map file
    #cmd='/bin/bash create_map_design.sh '+config['MAP_FILE']
    #send2log( 'executing:'+cmd, log_file )
@@ -824,14 +824,14 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    # quit()
    add2mothur_cmd('quit()',mothur_batch)
    # execute mothur
-   cmd='./mothur '+mothur_batch+' >>'+log_file                                                                                                                                                        
+   cmd='./mothur '+mothur_batch+' >>'+log_file
    exec_sys(cmd)
 
    # check for NBases from rawfile.trim.contigs.summary
    maxlen='0'
    if os.path.isfile( 'rawfile.trim.contigs.summary' ):
       # maxlen=syscall( "cat ./rawfile.trim.contigs.summary | awk \'{print$4}\' | sort -nu | tail -1") # max value of column
-      maxlen=syscall( "cat ./rawfile.trim.contigs.summary | awk \'{ sum += $4; n++ } END { if (n > 0) print sum / n; }\'") # average 
+      maxlen=syscall( "cat ./rawfile.trim.contigs.summary | awk \'{ sum += $4; n++ } END { if (n > 0) print sum / n; }\'") # average
       send2log( 'checking NBases in rawfile.trim.contigs.summary, maxlen='+maxlen, log_file)
       i_maxlen=int( round( float(maxlen) )+1)
       if i_maxlen > int(config['MAXLENGTH']):
@@ -852,7 +852,7 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    # quit()
    add2mothur_cmd('quit()',mothur_batch)
    # execute mothur
-   cmd='./mothur '+mothur_batch+' >>'+log_file                                                                                                                                                        
+   cmd='./mothur '+mothur_batch+' >>'+log_file
    exec_sys(cmd)
 
    # get count of start and end for pcr.seqs
@@ -903,7 +903,7 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    # mothur "#summary.seqs(fasta=rawfile.trim.contigs.good.unique.align, count=rawfile.trim.contigs.good.count_table)"
    add2mothur_cmd('summary.seqs(fasta=rawfile.trim.contigs.good.unique.align, count=rawfile.trim.contigs.good.count_table)',mothur_batch)
 
-   # mothur "# screen.seqs(fasta=rawfile.trim.contigs.good.unique.align, count=rawfile.trim.contigs.good.count_table, 
+   # mothur "# screen.seqs(fasta=rawfile.trim.contigs.good.unique.align, count=rawfile.trim.contigs.good.count_table,
    # summary=rawfile.trim.contigs.good.unique.summary, optimize=start-end-minlength, criteria=90)"
    add2mothur_cmd('screen.seqs(fasta=rawfile.trim.contigs.good.unique.align, count=rawfile.trim.contigs.good.count_table,'\
          +' summary=rawfile.trim.contigs.good.unique.summary, optimize=start-end-minlength, criteria='+config['CRITERIA']+')',mothur_batch)
@@ -915,32 +915,32 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    add2mothur_cmd('unique.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.fasta,'\
         +' count=rawfile.trim.contigs.good.good.count_table)',mothur_batch)
 
-   # mothur "#pre.cluster(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.fasta, 
+   # mothur "#pre.cluster(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.fasta,
    # count=rawfile.trim.contigs.good.unique.good.filter.count_table, diffs=2)"
    add2mothur_cmd('pre.cluster(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.fasta,'\
         +' count=rawfile.trim.contigs.good.unique.good.filter.count_table, diffs=2)',mothur_batch)
 
-   # mothur "#chimera.uchime(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.fasta, 
+   # mothur "#chimera.uchime(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.fasta,
    # count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.count_table, dereplicate=t)"
    add2mothur_cmd('chimera.uchime(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.fasta,'\
         +' count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.count_table, dereplicate=t)',mothur_batch)
 
-   # mothur "#remove.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.fasta, 
+   # mothur "#remove.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.fasta,
    # accnos=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.accnos)"
    add2mothur_cmd('remove.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.fasta,'\
         +' accnos=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.accnos)',mothur_batch)
 
-   # mothur "#classify.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, 
-   # count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table, 
-   # reference=/bcbb/quinones/greengenes/gg_13_5_otus/gg_13_5_formothur/gg_13_5_97.fasta, 
+   # mothur "#classify.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta,
+   # count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table,
+   # reference=/bcbb/quinones/greengenes/gg_13_5_otus/gg_13_5_formothur/gg_13_5_97.fasta,
    # taxonomy=/bcbb/quinones/greengenes/gg_13_5_otus/gg_13_5_formothur/gg_13_5_97.gg.tax, cutoff=80)"
    add2mothur_cmd('classify.seqs(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta,'\
         +' count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table,'\
         +' reference=gg_13_5_97.fasta, taxonomy=gg_13_5_97.gg.tax, cutoff=80, probs=f)',mothur_batch)
 
-   # mothur "#remove.lineage(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, 
-   # count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table, 
-   # taxonomy=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.gg.wang.taxonomy, 
+   # mothur "#remove.lineage(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta,
+   # count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table,
+   # taxonomy=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.gg.wang.taxonomy,
    # taxon=Chloroplast-Mitochondria-unknown-Archaea-Eukaryota)"
    add2mothur_cmd('remove.lineage(fasta=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta,'\
         +' count=rawfile.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.count_table,'\
@@ -971,7 +971,7 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    # quit()
    add2mothur_cmd('quit()',mothur_batch)
    # execute mothur
-   cmd='./mothur '+mothur_batch+' >>'+log_file                                                                                                                                                        
+   cmd='./mothur '+mothur_batch+' >>'+log_file
    exec_sys(cmd)
    send2log( 'Processing step 2 DONE', log_file )
 
@@ -1026,7 +1026,7 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    # quit()
    add2mothur_cmd('quit()',mothur_batch)
    # execute mothur
-   cmd='./mothur '+mothur_batch+' >>'+log_file                                                                                                                                                        
+   cmd='./mothur '+mothur_batch+' >>'+log_file
    exec_sys(cmd)
    send2log( 'Processing step 3 DONE',log_file )
 
@@ -1048,7 +1048,7 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    # mothur "#metastats(shared=rawfile.final.otu.shared, design=../miseq_design.design)"
    add2mothur_cmd('metastats(shared=rawfile.final.otu.shared, design='+config['DESIGN_FILE']+')',mothur_batch)
 
-   # mothur "#classify.otu(list=rawfile.final.an.unique_list.list, count=rawfile.final.count_table, 
+   # mothur "#classify.otu(list=rawfile.final.an.unique_list.list, count=rawfile.final.count_table,
    # taxonomy=rawfile.final.taxonomy, label=0.03, reftaxonomy=/bcbb/quinones/greengenes/gg_13_5_otus/gg_13_5_formothur/gg_13_5_97.gg.tax)"
    add2mothur_cmd('classify.otu(list=rawfile.final.an.unique_list.list, count=rawfile.final.count_table,'\
          +' taxonomy=rawfile.final.taxonomy, label=0.03, reftaxonomy=gg_13_5_97.gg.tax)',mothur_batch)
@@ -1066,7 +1066,7 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    # quit()
    add2mothur_cmd('quit()',mothur_batch)
    # execute mothur
-   cmd='./mothur '+mothur_batch+' >>'+log_file                                                                                                                                                        
+   cmd='./mothur '+mothur_batch+' >>'+log_file
    exec_sys(cmd)
    send2log( 'Analysis - Step 1a (alpha and beta diversity from OTUs) DONE',log_file )
 
@@ -1078,13 +1078,13 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    cmd="echo '# Analysis - Step 1b Create proper output files for LEfSe, Qiime plots' >"+mothur_batch
    exec_sys(cmd)
 
-   # mothur "#make.lefse(shared=rawfile.final.otu.shared, design=miseq_mouse.design, 
+   # mothur "#make.lefse(shared=rawfile.final.otu.shared, design=miseq_mouse.design,
    # constaxonomy=rawfile.final.an.unique_list.0.03.cons.taxonomy)"
    add2mothur_cmd('make.lefse(shared=rawfile.final.otu.shared, design='+config['DESIGN_FILE']+','\
            +' constaxonomy=rawfile.final.an.unique_list.0.03.cons.taxonomy)',mothur_batch)
 
-   # mothur "#make.biom(shared=rawfile.final.otu.shared, constaxonomy=rawfile.final.an.unique_list.0.03.cons.taxonomy, 
-   # picrust=/bcbb/microbiome_cloud_test/97_otu_map.txt, label=0.03, 
+   # mothur "#make.biom(shared=rawfile.final.otu.shared, constaxonomy=rawfile.final.an.unique_list.0.03.cons.taxonomy,
+   # picrust=/bcbb/microbiome_cloud_test/97_otu_map.txt, label=0.03,
    # reftaxonomy=/bcbb/quinones/greengenes/gg_13_5_otus/gg_13_5_formothur/gg_13_5_97.gg.tax)"
    add2mothur_cmd('make.biom(shared=rawfile.final.otu.shared,'\
            +' constaxonomy=rawfile.final.an.unique_list.0.03.cons.taxonomy,'\
@@ -1093,7 +1093,7 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    # quit()
    add2mothur_cmd('quit()',mothur_batch)
    # execute mothur
-   cmd='./mothur '+mothur_batch+' >>'+log_file                                                                                                                                                        
+   cmd='./mothur '+mothur_batch+' >>'+log_file
    exec_sys(cmd)
 
    send2log( 'Analysis - Step 1b Prepare files for processing with Qiime and Huttenhower tools DONE',log_file )
@@ -1199,13 +1199,13 @@ if 'PAIR_FASTQ_FILE' == config['INPUT_TYPE']:
    # check for Treatment or TreatmentGroup
    treatment='Treatment'
    work=syscall('grep TreatmentGroup '+config['MAP_FILE'])
-   if len(work)>3:           
+   if len(work)>3:
       treatment='TreatmentGroup'
    cmd='sort_otu_table.py -i rawfile.final.otu.0.03.biom'\
         +' -o rawfile.final.otu.0.03.sorted.biom'\
         +' -m '+config['MAP_FILE']+' -s '+treatment
-   # sort_otu_table.py -i /bcbb/quinones/microbiome_cloud_project/MiSeq_SOP/rawfile.final.otu.0.03.biom 
-   # -o /bcbb/quinones/microbiome_cloud_project/MiSeq_SOP/rawfile.final.otu.0.03.biom 
+   # sort_otu_table.py -i /bcbb/quinones/microbiome_cloud_project/MiSeq_SOP/rawfile.final.otu.0.03.biom
+   # -o /bcbb/quinones/microbiome_cloud_project/MiSeq_SOP/rawfile.final.otu.0.03.biom
    # -m /bcbb/quinones/microbiome_cloud_project/MiSeq_SOP/HMPsample_barcode.mapping -s Treatment
    #cmd='sort_otu_table.py -i rawfile.final.otu.0.03.biom'\
    #    +' -o rawfile.final.otu.0.03.sorted.biom'\

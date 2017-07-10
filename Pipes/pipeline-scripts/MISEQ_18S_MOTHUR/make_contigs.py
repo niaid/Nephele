@@ -44,7 +44,7 @@ args = parser.parse_args()
 
 def verbose_print(s):
     if not args.silent:
-        print s
+        print(s)
 
 # Helper function: given file f, return an iterator for the FASTA records
 def fasta_iter(f):
@@ -163,7 +163,7 @@ verbose_print("  Total contigs: %d" % len(shared_reads))
 # Write ouput name and group files
 
 verbose_print("\nWriting final name file...")
-for representative, duplicates in new_duplicates.iteritems():
+for representative, duplicates in new_duplicates.items():
     args.out_name.write('%s\t%s\n' % (representative, ','.join(duplicates)))
 
 verbose_print("\nWriting final group file...")
@@ -183,7 +183,7 @@ for name, sequence in fasta_iter(args.r1_fasta):
 # Make dictionary mapping from R2 to the set of contigs containing it
 
 r2_to_contig = {}
-for pair, name in contigs.iteritems():
+for pair, name in contigs.items():
     r2 = pair[1]
     if r2 not in r2_to_contig:
         r2_to_contig[r2] = list()

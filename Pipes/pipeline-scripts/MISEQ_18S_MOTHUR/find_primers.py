@@ -5,10 +5,10 @@
 # Joe Wan
 # v. 3: Fixed bug when checking for empty file.
 #
-# Helper script for Nephele pipelines. Given a primer-trimmed (pcr.seqs) input 
+# Helper script for Nephele pipelines. Given a primer-trimmed (pcr.seqs) input
 # and the untrimmed original, trim the entire original alignment to the primer-
 # bracketed region. This way, sequences with primer mismatches aren't thrown out
-# (which may be desirable, since primers can amplify even when there are 
+# (which may be desirable, since primers can amplify even when there are
 # mismatches).
 
 import argparse
@@ -17,9 +17,9 @@ from collections import defaultdict
 parser = argparse.ArgumentParser(description=
     "Given a primer-trimmed (pcr.seqs) input , find the primer-bracketed "
     "region.")
-parser.add_argument("--trimmed", type=argparse.FileType('r'), required=True, 
+parser.add_argument("--trimmed", type=argparse.FileType('r'), required=True,
     help="Trimmed alignment (output of mothur's pcr.seqs)")
-parser.add_argument("--output", type=argparse.FileType('w'), required=True, 
+parser.add_argument("--output", type=argparse.FileType('w'), required=True,
     help="Output file with alignment positions")
 parser.add_argument("--silent", action='store_true',
     help="If specified, don't print anything to stdout.")
@@ -54,7 +54,7 @@ def get_positions(s):
     # # Now, pos is at the (1-indexed) first '.' after the aligned portion
     # end = pos - 1
     # return (start, end)
-    
+
     # Using the faster l/rstrip functions saves a lot of time!
     orig_len = len(s)
     lstrip_len = len(s.lstrip('.'))
@@ -65,7 +65,7 @@ def get_positions(s):
 
 def print_verbose(s):
     if not args.silent:
-        print s
+        print(s)
 
 # Determine best start and end positions
 start_positions = defaultdict(lambda: 0)
@@ -81,7 +81,7 @@ for name, sequence in fasta_iter(args.trimmed):
         length = len(sequence)
     if len(sequence) != length:
         if not warned:
-            print 'Warning: length of aligned sequences is not the same.'
+            print('Warning: length of aligned sequences is not the same.')
             warned = True
         length = max(len(sequence), length)
     start, end = get_positions(sequence)
@@ -108,9 +108,9 @@ if num_seqs >= 1:
         print_verbose('Forward primer not found. Using %d (end) as end position.' % best_end)
 
     print_verbose("\nFound alignment positions.")
-    print_verbose("  Start: %d (%d/%d seqs)" % (best_start, 
+    print_verbose("  Start: %d (%d/%d seqs)" % (best_start,
         start_positions[best_start], num_seqs))
-    print_verbose("  End: %d (%d/%d seqs)" % (best_end, 
+    print_verbose("  End: %d (%d/%d seqs)" % (best_end,
         end_positions[best_end], num_seqs))
 
     if best_start > best_end:
@@ -121,4 +121,4 @@ if num_seqs >= 1:
     args.output.write('%s\t%s\n' % (best_start, best_end))
 else:
     print_verbose("Not enough sequences. Using entire alignment.")
-    args.output.write('?\t?\n' % (best_start, best_end))
+    args.output.write('{0}\t{1}\n'.format(best_start, best_end))

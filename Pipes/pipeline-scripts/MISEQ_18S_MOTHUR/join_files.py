@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-from itertools import izip
 import os.path
 
 parser = argparse.ArgumentParser(description=
@@ -44,7 +43,7 @@ def format_id(i):
 
 # Iterate through FASTQ
 def fastq_iter(f):
-    for record in izip(*[f] * 4): # Read 4 at a time
+    for record in zip(*[f] * 4): # Read 4 at a time
         read_id = record[0][1:].rstrip()
         seq = record[1].strip()
         qual = record[3].strip()
@@ -87,7 +86,7 @@ for line in args.input:
     # Iterate through records in pairs of files
     with open(r1_path, 'r') as r1, open(r2_path, 'r') as r2:
         for (r1_id, r1_seq, r1_qual), (r2_id, r2_seq, r2_qual) \
-                in izip(fastq_iter(r1), fastq_iter(r2)):
+                in zip(fastq_iter(r1), fastq_iter(r2)):
             assert format_id(r1_id) == format_id(r2_id)
             new_id = format_id(r1_id)
             concat = r1_seq + 'N' * args.num_ambig + rc(r2_seq)

@@ -9,6 +9,7 @@
 ##############################################################
 
 import sys, os, random, time, glob
+import re
 syscall = lambda cmd: (os.popen(cmd).read()).rstrip("\n")
 
 def read_config( file_name, config ): #########################
