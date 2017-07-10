@@ -1,4 +1,4 @@
-AMI_ID,ami-33eee024
+AMI_ID,ami-c1f1f2d7
 INPUT_TYPE,MISEQ_MULTIPLEX
 COMP_WITH_DACC,NO
 MAP_FILE,nephele_miseq_200K.mapping
