@@ -1,4 +1,10 @@
 # Nephele Project
+
+This repository is now archived. 
+
+Please see https://github.com/niaid/nephele2
+for the current version. 
+
 Nephele is a cloud-based platform for simplified, standardized, and reproducible microbiome analysis, available at https://nephele.niaid.nih.gov. Nephele intends to allow non-expert bioinformatic users to process microbiome datasets through pipelines of existing software tools. Typically this type of work is computationally intensive and requires knowledge of both scripting and the tools themselves. Nephele attempts to overcome these issues.
 
 To address the computationally intensive aspect, we provision dedicated, cloud-based compute resources, in an on-demand nature, and with an appropriate environment for analyzing user-supplied data. When an analysis pipeline completes, this compute resource is torn down. This means users can process as many datasets as they choose, simultaneously, by machines that are dynamically spun up and shut down.
